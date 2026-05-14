@@ -1,0 +1,75 @@
+{block content}
+
+<div class="back"><a href="{link BlogCategory:default}"><i class="fas fa-chevron-left"></i> Zpět na výpis</a></div>
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+  <li><a>SEO</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label name /}
+          {input name}
+          {label content /}
+          {input content}
+          {label url /}
+          {input url}
+          {label image /}
+          
+          <div style="display: flex; align-items: center;">
+            {if $record->data()->filename !== null}
+              <div style="margin-right: 15px;">
+                <img style="max-width: 100px; max-height: 100px;" src="{$basePath}/www/upload/blogCategory/small/{$record->data()->filename}" alt="">
+              </div>
+              <div>
+                <a href="{link removeImage!}">Odstranit obrázek</a>
+                {input image}
+              </div>
+            {else}
+              <div style="margin-right: 15px;">
+                <img style="max-width: 100px; max-height: 100px;" src="{$basePath}/www/admin/img/noimage.jpg" alt="">
+              </div>
+              <div>
+                {input image}
+              </div>
+            {/if}
+          </div>
+
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+    	</div>
+    </div>
+
+  </li>
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">SEO nastavení</h6>
+      </div>
+      <div class="card-body">
+        {form editSeoForm}
+          {label title /}
+          {input title}
+          {label description /}
+          {input description}
+          {label keywords /}
+          {input keywords}
+          
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+      </div>
+    </div>
+  </li>
+</ul>
+
+{/block}

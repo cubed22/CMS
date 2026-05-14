@@ -1,0 +1,143 @@
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{link Homepage:default}">
+      <div class="sidebar-brand-text mx-3">{$settingRecord->data()->name}</div>
+  </a>
+
+  <hr class="sidebar-divider my-0">
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Homepage'}active{/if}">
+    <a class="nav-link" href="{link Homepage:default}">
+    <i class="fas fa-home"></i>
+    <span>Hlavní stránka</span></a>
+  </li>
+
+  <hr class="sidebar-divider">
+
+  <div class="sidebar-heading">
+    Obecné
+  </div>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Menu'}active{/if}">
+    <a class="nav-link" href="{link Menu:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-newspaper"></i>
+        <span>Menu</span>
+      </div>
+      <span class="uk-badge">{count($allMenuItems)}</span>
+    </a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Slideshow'}active{/if}">
+    <a class="nav-link" href="{link Slideshow:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-newspaper"></i>
+        <span>Slideshow</span>
+      </div>
+      <span class="uk-badge">{count($allSlideshowItems)}</span>
+    </a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Page'}active{/if}">
+    <a class="nav-link" href="{link Page:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-newspaper"></i>
+        <span>Stránky</span>
+      </div>
+      <span class="uk-badge">{count($allPageItems)}</span>
+    </a>
+  </li>
+
+  <hr class="sidebar-divider d-none d-md-block">
+
+  <div class="sidebar-heading">
+    Blog
+  </div>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Blog'}active{/if}">
+    <a class="nav-link" href="{link Blog:default}" style="display: flex;">
+      <div>
+        <i class="far fa-newspaper"></i>
+        <span>Články</span>
+      </div>
+      <span class="uk-badge">{count($allBlogItems)}</span>
+    </a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:BlogCategory'}active{/if}">
+    <a class="nav-link" href="{link BlogCategory:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-list"></i>
+        <span>Kategorie článků</span>
+      </div>
+      <span class="uk-badge">{count($allBlogCategoryItems)}</span>
+    </a>
+  </li>
+
+  <hr class="sidebar-divider d-none d-md-block">
+
+  <div class="sidebar-heading">
+    E-maily
+  </div>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Message'}active{/if}">
+    <a class="nav-link" href="{link Message:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-envelope"></i>
+        <span>E-maily</span>
+      </div>
+      <span class="uk-badge">{count($allMessageItems)}</span>
+    </a>
+  </li>
+
+  <hr class="sidebar-divider d-none d-md-block">
+
+  <div class="sidebar-heading">
+    Nastavení
+  </div>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:TermsCondition'}active{/if}">
+    <a class="nav-link" href="{link TermsCondition:detail}">
+    <i class="fas fa-database"></i>
+    <span>Obchodní podmínky</span></a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:PersonalDataProtection'}active{/if}">
+    <a class="nav-link" href="{link PersonalDataProtection:detail}">
+    <i class="fas fa-database"></i>
+    <span>Ochrana osobních údajů</span></a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Setting'}active{/if}">
+    <a class="nav-link" href="{link Setting:default}">
+    <i class="fas fa-wrench"></i>
+    <span>Nastavení</span></a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:User'}active{/if}">
+    <a class="nav-link" href="{link User:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-users"></i>
+        <span>Uživatelé</span>
+      </div>
+      <div>
+        <span class="uk-badge">{count($allUserItems)}</span>
+      </div>
+    </a>
+  </li>
+
+  <li class="nav-item {if $presenter->getName() == 'Admin:Cron'}active{/if}">
+    <a class="nav-link" href="{link Cron:default}" style="display: flex;">
+      <div>
+        <i class="fas fa-business-time"></i>
+        <span>Cronmaster</span>
+      </div>
+      <span class="uk-badge">{count($allCronItems)}</span>
+    </a>
+  </li>
+
+  <div class="text-center d-none d-md-inline">
+    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+  </div>
+
+</ul>

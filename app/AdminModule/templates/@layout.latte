@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>{$settingRecord->data()->name} - CMS</title>
+
+  <!-- Custom fonts for this template-->
+  <link rel="stylesheet" href="{$basePath}/www/admin/vendor/fontawesome-free/css/all.min.css" type="text/css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i">
+
+  <!-- Custom styles for this template-->
+  <link rel="stylesheet" href="{$basePath}/www/admin/css/sb-admin-2.min.css">
+  <link rel="stylesheet" href="{$basePath}/www/admin/css/flatpickr/flatpickr.min.css" >
+  <link rel="stylesheet" href="{$basePath}/www/admin/css/select2.min.css">
+  <link rel="stylesheet" href="{$basePath}/www/admin/css/uikit.css">
+  <link rel="stylesheet" href="{$basePath}/www/frontend/css/leaflet.css">
+  
+  {control adminCss}
+
+  <script src="{$basePath}/www/frontend/js/uikit.min.js"></script>
+  <script src="{$basePath}/www/admin/js/jquery-3.7.1.min.js"></script>
+  
+  <script src="{$basePath}/www/frontend/js/leaflet.js"></script>
+  <script src="{$basePath}/www/frontend/js/script.js"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote.min.css">
+
+</head>
+
+<body id="page-top">
+  {snippet messageSnippet}
+  	<div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
+      <script>
+        $(document).ready(function () {
+          UIkit.notification({$flash->message}, {$flash->type});
+        });
+      </script>
+    </div>
+  {/snippet}
+
+  <div id="wrapper">
+    {include @header.latte}
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        {include @topbar.latte}
+        <div class="container-fluid">
+          <!-- Page Heading -->
+          <div class=" mb-4">
+            {include content}
+          </div>
+        </div>
+      </div>
+
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>Copyright &copy; CMS {date('Y')}</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    {include @footer.latte}
+	</div>
+
+	{block scripts}
+    <script src="{$basePath}/www/admin/js/admin.js"></script>
+    <script src="{$basePath}/www/admin/js/flatpickr/flatpickr.min.js"></script>
+    <script src="{$basePath}/www/admin/js/flatpickr/flatpickr.l10n.cs.js"></script>
+  	<script src="https://nette.github.io/resources/js/netteForms.min.js"></script>
+    
+    {include "./_scripts/@flatpickr-init.latte"}
+    {include "./_scripts/@select2-init.latte"}
+    {include "./_scripts/@wysiwyg-init.latte"}
+    
+    <script src="{$basePath}/www/admin/vendor/jquery/jquery.min.js"></script>
+    <script src="{$basePath}/www/admin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{$basePath}/www/admin/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="{$basePath}/www/admin/js/sb-admin-2.min.js"></script>
+    <script src="{$basePath}/www/admin/js/uikit.min.js"></script>
+    <script src="{$basePath}/www/admin/js/nette.ajax.js"></script>
+    <script src="{$basePath}/www/admin/js/select2.min.js"></script>
+    <script>
+        $(function () {
+          $.nette.init();
+        });
+    </script>
+	{/block}
+  
+</body>
+</html>

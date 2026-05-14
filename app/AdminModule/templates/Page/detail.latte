@@ -1,0 +1,130 @@
+{block content}
+
+<div class="back"><a href="{link Page:default}"><i class="fas fa-chevron-left"></i> Zpět na výpis</a></div>
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+  <li class="{if $presenter->getParameter('tab') == 'seo'}uk-active{/if}"><a>SEO</a></li>
+  <li class="{if $presenter->getParameter('tab') == 'img'}uk-active{/if}"><a>Obrázky</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label name /}
+          {input name}
+          <div class="checkbox-wrapper">
+            {label active /}
+            {input active}
+          </div>
+          {label content, style => "margin-top: 10px;" /}
+          {input content}
+          {label url /}
+          {input url}
+          {label image /}
+          
+          <div style="display: flex; align-items: center;">
+            {if $record->data()->filename !== null}
+              <div style="margin-right: 15px;">
+                <img style="max-width: 100px; max-height: 100px;" src="{$basePath}/www/upload/blog/small/{$record->data()->filename}" alt="">
+              </div>
+              <div>
+                <a href="{link removeFrontImage!}">Odstranit obrázek</a>
+                {input image}
+              </div>
+            {else}
+              <div style="margin-right: 15px;">
+                <img style="max-width: 100px; max-height: 100px;" src="{$basePath}/www/admin/img/noimage.jpg" alt="">
+              </div>
+              <div>
+                {input image}
+              </div>
+            {/if}
+          </div>
+          
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+    	</div>
+    </div>
+  </li>
+
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">SEO nastavení</h6>
+      </div>
+      <div class="card-body">
+        {form editSeoForm}
+          {label title /}
+          {input title}
+          {label description /}
+          {input description}
+          {label keywords /}
+          {input keywords}
+          
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+      </div>
+    </div>
+  </li>
+
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Přidat obrázek</h6>
+      </div>
+      <div class="card-body">
+        {form insertImageForm}
+          <div class="">
+            {label filename /}
+            {input filename}
+          </div>
+          <div>
+            {input submit}
+          </div>
+        {/form}
+      </div>
+    </div>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Výpis všech obrázků</h6>
+      </div>
+      <div class="card-body">
+        {if count($imageItems)}
+          <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+              <thead>
+                <tr>
+                  <th style="width: 100px; text-align: center;">Obrázek</th>
+                  <th class="actions">Akce</th>
+                </tr>
+              </thead>
+              <tbody>
+                {foreach $imageItems as $item}
+                  <tr>
+                    <td style="width: 100px; text-align: center;"><a><img style="max-height: 50px; max-width: 50px;" src="{if $item->data()->filename}{$basePath}/www/upload/blog/images/small/{$item->data()->filename}{else}{$basePath}/www/admin/img/noimage.jpg{/if}"></a></td>
+                    <td class="actions">
+                      <a uk-tooltip="Odstranit" class="btn btn-danger btn-sm" href="{link removeImage! $item->data()->id}" onclick="return confirm('Opravdu odebrat?');"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                {/foreach}
+              </tbody>
+            </table>
+          </div>
+        {else}
+          <p>Nenalezen žádný záznam.</p>
+        {/if}
+      </div>
+    </div>
+  </li>
+
+</ul>
+
+{/block}

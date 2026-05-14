@@ -1,0 +1,54 @@
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow uk-margin-bottom" uk-sticky>
+
+  <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+      <i class="fa fa-bars"></i>
+  </button>
+
+  {ifset $headerName}
+    <div class="topbar-name">
+      {$headerName}
+    </div>
+  {/ifset}
+
+  <ul class="navbar-nav ml-auto" style="margin-top: 0;">
+
+    {if $presenter->getName() == "Admin:Page" && isset($record)}
+      <li class="nav-item dropdown no-arrow mx-1">
+        <a class="nav-link" target="_blank" href="{link :Frontend:Page:detail $record->data()->url}" style="color: #900;">
+            Náhled položky
+        </a>
+      </li>
+    {/if}
+    {if $presenter->getName() == "Admin:Blog" && isset($record)}
+      <li class="nav-item dropdown no-arrow mx-1">
+        <a class="nav-link" target="_blank" href="{link :Frontend:Blog:detail $record->data()->url}" style="color: #900;">
+            Náhled položky
+        </a>
+      </li>
+    {/if}
+
+    <li class="nav-item dropdown no-arrow mx-1">
+      <a class="nav-link" target="_blank" href="{link :Frontend:Homepage:default}">
+        Zobrazit web
+      </a>
+    </li>
+
+    <div class="topbar-divider d-none d-sm-block"></div>
+
+    <li class="nav-item dropdown no-arrow">
+      <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="mr-2 d-none d-lg-inline text-gray-600 small">{$adminUser->data()->email}</span>
+        <img class="img-profile rounded-circle" src="{$basePath}/www/admin/img/undraw_profile.svg">
+      </a>
+      <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+          <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+          Odhlásit se
+        </a>
+      </div>
+    </li>
+
+  </ul>
+
+</nav>

@@ -1,0 +1,126 @@
+<script>
+	$(document).ready(function() {
+
+    $('.select2').select2({
+      minimumResultsForSearch: 30
+    });
+    $('.select2-multiple-location').select2({
+        multiple: true,
+        placeholder: "Lokalita",
+    });
+    $('.select2-multiple-location-add-service').select2({
+        multiple: true,
+        placeholder: "Vyber lokality nebo celou ČR",
+    });
+    $('.select2-multiple-categories').select2({
+        multiple: true,
+        placeholder: "vyber jaké kategorie",
+    });
+    $('.select2-categories-add-service').select2({
+        placeholder: "Vyber kategorii služby",
+    });
+    $('.select2.service-place-locality').select2({
+        placeholder: "V jaké lokalitě hledáte?",
+    });
+
+    $('.select2.locality').select2({
+      placeholder: "Lokalita",
+    });
+    $('.select2.two-chars').select2({
+      minimumInputLength: 2,
+      language: {
+        inputTooShort: function() {
+          return 'Zadejte alespoň 2 znaky.';
+        }
+      },
+    });
+
+    $('.select2-budget').select2({
+      minimumResultsForSearch: 30,
+      placeholder: "Orientační rozpočet",
+    });
+
+    $('.select2-multiple-gallery').select2({
+      multiple: true,
+      placeholder: "Vyber štítky",
+    });
+
+    $('.select2.two-chars.locality').select2({
+      placeholder: "Lokalita (obec)",
+      minimumInputLength: 2,
+      language: {
+        inputTooShort: function() {
+          return 'Zadejte alespoň 2 znaky.';
+        }
+      },
+      matcher: function(params, data) {
+          // Pokud není vyhledávaný řetězec zadán, vrátíme všechny výsledky
+          if ($.trim(params.term) === '') {
+              return data;
+          }
+
+          // Porovnáváme, jestli se vyhledávaný term nachází v textu možnosti
+          const term = removeDiacritics(params.term.toLowerCase());
+          const text = removeDiacritics(data.text.toLowerCase());
+          
+          if (text.indexOf(term) > -1) {
+              return data;
+          }
+
+          // Pokud term nenalezen, vracíme null (taková možnost nebude ve výsledcích)
+          return null;
+      },
+      sorter: function(data) {
+          // Řadíme výsledky na základě pozice výskytu vyhledávaného řetězce
+          return data.sort(function(a, b) {
+              var term = removeDiacritics($("#frm-requestForm").find(".select2-wrapper").find(".select2").data("select2").dropdown.$search.val().toLowerCase());
+              var aIndex = removeDiacritics(a.text.toLowerCase()).indexOf(term);
+              var bIndex = removeDiacritics(b.text.toLowerCase()).indexOf(term);
+
+              // Výsledky s dřívějším výskytem budou řazeny výše
+              return aIndex - bIndex;
+          });
+      }
+    });
+
+
+    $('.select2.locality-register').select2({
+      placeholder: "*Vyber předpokládanou lokalitu",
+      minimumInputLength: 2,
+      language: {
+        inputTooShort: function() {
+          return 'Zadejte alespoň 2 znaky.';
+        }
+      },
+      matcher: function(params, data) {
+          // Pokud není vyhledávaný řetězec zadán, vrátíme všechny výsledky
+          if ($.trim(params.term) === '') {
+              return data;
+          }
+
+          // Porovnáváme, jestli se vyhledávaný term nachází v textu možnosti
+          const term = removeDiacritics(params.term.toLowerCase());
+          const text = removeDiacritics(data.text.toLowerCase());
+          
+          if (text.indexOf(term) > -1) {
+              return data;
+          }
+
+          // Pokud term nenalezen, vracíme null (taková možnost nebude ve výsledcích)
+          return null;
+      },
+      sorter: function(data) {
+          // Řadíme výsledky na základě pozice výskytu vyhledávaného řetězce
+          return data.sort(function(a, b) {
+              var term = removeDiacritics($("#modal-register").find(".select2-wrapper").find(".select2").data("select2").dropdown.$search.val().toLowerCase());
+              var aIndex = removeDiacritics(a.text.toLowerCase()).indexOf(term);
+              var bIndex = removeDiacritics(b.text.toLowerCase()).indexOf(term);
+
+              // Výsledky s dřívějším výskytem budou řazeny výše
+              return aIndex - bIndex;
+          });
+      }
+    });
+
+  });
+</script>

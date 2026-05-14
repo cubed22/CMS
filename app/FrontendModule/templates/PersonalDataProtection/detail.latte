@@ -1,0 +1,8 @@
+{block content}
+	<section class="settings">
+		<div class="uk-container">
+			<h1>{$record->data()->name}</h1>
+			{$record->data()->content|noescape}
+		</div>
+	</section>
+{/block}

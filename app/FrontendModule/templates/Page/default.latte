@@ -1,0 +1,23 @@
+{block metaTitle}
+	Blog
+{/block}
+
+{block content}
+	<section class="blog">
+		<div class="uk-container">
+			<div class="items-wrapper uk-grid-small" uk-grid>
+				{foreach $items as $item}
+					<div class="uk-width-1-4@m uk-width-1-2@s item">
+						<a href="{link Blog:detail $item->data()->url}">
+							<div class="image" style="background-image: url('{if $item->data()->filename}{$basePath}/www/upload/blog/exact/{$item->data()->filename}{else}{$basePath}/www/admin/img/noimage.jpg{/if}');"></div>
+							<div class="title">
+								<div class="name">{$item->data()->name}</div>
+								<div class="description">{$item->data()->time|date:"j.n.Y"}</div>
+							</div>
+						</a>
+					</div>
+				{/foreach}
+			</div>
+		</div>
+	</section>
+{/block}

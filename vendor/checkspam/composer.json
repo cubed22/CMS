@@ -1,0 +1,6 @@
+{
+    "require": {
+        "tracy/tracy": "^2.9",
+        "phpmailer/phpmailer": "^6.6"
+    }
+}

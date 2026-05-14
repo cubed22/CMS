@@ -1,0 +1,81 @@
+{block facebookMetaTitle}
+	{var $fbTitle = ""}
+	{if $record->data()->title != ""}
+		{var $fbTitle = $record->data()->title}
+	{else}
+		{var $fbTitle = $record->data()->name}
+	{/if}
+  <meta property="og:title" content="{$fbTitle}" />
+{/block}
+
+{block facebookMetaDescription}
+	{var $fbDescription = ""}
+	{if $record->data()->description != ""}
+		{var $fbDescription = $record->data()->description}
+	{else}
+		{var $fbDescription = $record->data()->content}
+	{/if}
+  <meta property="og:description" content="{$fbDescription|striptags|truncate:200|noescape}" />
+{/block}
+
+{block facebookMetaImage}
+  <meta property="og:image" content="{$basePath}/www/upload/page/{$record->data()->filename}" />
+{/block}
+
+{block metaTitle}
+	{var $title = ""}
+	{if $record->data()->title != ""}
+		{var $title = $record->data()->title}
+	{else}
+		{var $title = $record->data()->name}
+	{/if}
+	{$title}
+{/block}
+
+{block content}
+	<section class="main-head">
+		<h1>{$record->data()->name}</h1>
+	</section>
+	<section class="breadcrumb">
+		<span><a href="{link Homepage:default}">Úvod</a> / {$record->data()->name}</span>
+	</section>
+
+	<section class="blog-item">
+		<div class="uk-container">
+			<div>
+				{$record->data()->content|noescape}
+			</div>
+		</div>
+	</section>
+
+	{if count($images)}
+		<section class="gallery">
+			<div class="uk-container">
+				<div uk-lightbox>
+					<div class="uk-grid-small uk-flex uk-flex-top uk-flex-left grid" uk-grid>
+						<div class="uk-width-1-2@m">
+							<div uk-grid="masonry: pack;" class="uk-grid-small">
+								{foreach $images as $image}
+									{var $url = $basePath . '/www/upload/page/images/' . $image->data()->filename}
+									{var $urlSmall = $basePath . '/www/upload/page/images/small/' . $image->data()->filename}
+									<div class="uk-width-1-4@m uk-width-1-2@s">
+										<a class="image-wrapper" href="{$url}">
+											<div class="page-image before-scale" style="--bg-image: url('{$urlSmall}');"></div>
+										</a>
+									</div>
+								{/foreach}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<style>
+			.page-image::before {
+			  background-image: var(--bg-image);
+			}
+		</style>
+  	{/if}
+
+{/block}

@@ -1,0 +1,69 @@
+{block content}
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Přidat menu</h6>
+  </div>
+	<div class="card-body">
+	  {form insertForm}
+	  	{label label /}
+	  	{input label}
+	  	{input submit}
+	  {/form}
+	</div>
+</div>
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Výpis menu</h6>
+  </div>
+	<div class="card-body">
+    {if count($menuItems)}
+  	  <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th class="actions">Akce</th>
+            </tr>
+          </thead>
+          <thead>
+            <tr>
+              <th><input type="text" name="search" id="search-label" style="width: 100%;"></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {foreach $menuItems as $item}
+              <tr>
+                <td class="label"><a href="{link Menu:detail $item->data()->id}">{$item->data()->label}</a></td>
+                <td class="actions">
+                  <a uk-tooltip="Upravit" class="btn btn-primary btn-sm" href="{link Menu:detail $item->data()->id}"><i class="fas fa-edit"></i></a>
+                  <a uk-tooltip="Odstranit" class="btn btn-danger btn-sm" href="{link remove! $item->data()->id}" onclick="return confirm('Opravdu odebrat?');"><i class="fas fa-trash"></i></a>
+                </td>
+              </tr>
+            {/foreach}
+          </tbody>
+        </table>
+  	  </div>
+    {else}
+      <p>Nenalezen žádný záznam.</p>
+    {/if}
+	</div>
+</div>
+
+{* Very simple search *}
+<script>
+  $('#search-label').on('input', function(){ 
+    const val = $(this).val().toLowerCase();
+    $(".label").closest("tr").hide();
+    $(".label").each(function(){
+      const text = $(this).text().toLowerCase(); 
+      if(text.indexOf(val) !== -1) { 
+        $(this).closest("tr").show();
+      }
+    });
+  });
+</script>
+
+{/block}

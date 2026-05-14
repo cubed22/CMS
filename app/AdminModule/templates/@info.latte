@@ -1,0 +1,13 @@
+<hr>
+<div style="display: flex; justify-content: space-between;">
+  <div style="text-align: center;">
+    <div class="create">Vytvořil:</div>
+    <div class="create-user">{$record->getCreateUser()->data()->name}</div>
+    <div class="create-time">{$record->data()->time_create|date:"j.n.Y H:i"}</div>
+  </div>
+  <div style="text-align: center;">
+    <div class="create">Upravil:</div>
+    <div class="create-user">{$record->getModifyUser()->data()->name}</div>
+    <div class="create-time">{$record->data()->time_modify|date:"j.n.Y H:i"}</div>
+  </div>
+</div>

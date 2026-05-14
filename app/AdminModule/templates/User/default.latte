@@ -1,0 +1,89 @@
+{block content}
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Přidat uživatele</h6>
+  </div>
+	<div class="card-body">
+	  {form insertForm}
+	  	{label email /}
+	  	{input email}
+	  	{input submit}
+	  {/form}
+	</div>
+</div>
+
+<ul uk-switcher uk-tab>
+  <li class="uk-active"><a>Uživatelé</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Výpis všech uživatelů</h6>
+      </div>
+      {*snippet itemsSnippet*}
+        <div class="card-body">
+          {if count($users)}
+            <div class="table-responsive">
+              <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>E-mail</th>
+                    <th>Jméno</th>
+                    <th>Příjmení</th>
+                    <th>Telefon</th>
+                    <th class="actions">Akce</th>
+                  </tr>
+                </thead>
+                <thead>
+                  <tr>
+                    <th><input type="text" name="search" id="search-email" style="width: 100%;"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {foreach $users as $item}
+                    <tr>
+                      <td class="email"><a href="{link User:detail $item->data()->id}">{$item->data()->email}</a></td>
+                      <td>{$item->data()->name}</td>
+                      <td>{$item->data()->surname}</td>
+                      <td>{$item->data()->phone}</td>
+                      <td class="actions">
+                        <a uk-tooltip="Upravit" class="btn btn-primary btn-sm" href="{link User:detail $item->data()->id}"><i class="fas fa-edit"></i></a>
+                        <a uk-tooltip="Smazat" href="{link remove! $item->data()->id}" onclick="return confirm('Opravdu odebrat?');" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></i></a>
+                      </td>
+                    </tr>
+                  {/foreach}
+                </tbody>
+              </table>
+            </div>
+          {else}
+            <p>Nenalezen žádný záznam.</p>
+          {/if}
+        </div>
+      {*/snippet*}
+    </div>
+
+    <script>
+      $('#search-email').on('input', function(){ 
+        const val = $(this).val().toLowerCase();
+        $(".email").closest("tr").hide();
+        $(".email").each(function(){
+          const text = $(this).text().toLowerCase(); 
+          if(text.indexOf(val) !== -1) { 
+            $(this).closest("tr").show();
+          }
+        });
+      });
+    </script>
+  </li>
+
+</ul>
+
+{/block}

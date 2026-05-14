@@ -1,0 +1,23 @@
+application:
+	errorPresenter: Frontend:Error
+	mapping:
+		*: App\*Module\Presenters\*Presenter
+
+
+session:
+	expiration: 14 days
+
+
+di:
+	export:
+		parameters: no
+		tags: no
+
+services:
+	nette.latteFactory:
+		setup:
+			- setAutoRefresh( true )
+
+	latte.latteFactory:
+		setup:
+			- setTempDirectory( null )

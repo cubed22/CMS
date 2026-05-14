@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {ifset indexFollow}
+        {include indexFollow}
+    {/ifset}
+
+    <link rel="icon" type="image/x-icon" href="{$basePath}/favicon.ico">
+
+    <link rel="stylesheet" href="{$basePath}/www/frontend/css/uikit.css">
+    <link rel="stylesheet" href="{$basePath}/www/admin/css/select2.min.css">
+    <link rel="stylesheet" href="{$basePath}/www/frontend/css/font-awesome.css">
+    
+    {control css}
+    
+    <script src="{$basePath}/www/frontend/js/uikit.min.js"></script>
+    <script src="{$basePath}/www/frontend/js/jquery-1.11.2.min.js"></script>
+    <script src="{$basePath}/www/frontend/js/script.js"></script>
+
+    {ifset metaDescription}
+        {include metaDescription}
+    {/ifset}
+
+    {ifset metaTitle}
+        <title>{include metaTitle} | {$settingRecord->data()->name}</title>
+    {else}
+        <title>{$settingRecord->data()->name}</title>
+    {/ifset}
+    
+    {ifset ogImage}
+        {include ogImage}
+    {else}
+        <meta property="og:image" content="" />
+    {/ifset}
+    
+    {ifset ogDescription}
+        {include ogDescription}
+    {else}
+        <meta property="og:description" content="" />
+    {/ifset}  
+
+    {ifset ogTitle}
+        {include ogTitle}
+    {else}
+        <meta property="og:title" content="" />
+    {/ifset}
+
+    {ifset ogUrl}
+        {include ogUrl}
+    {/ifset}
+
+    <meta property="og:type" content="website">
+
+</head>
+
+<body class="body">
+    {snippet messagesSnippet}
+        <div n:foreach="$flashes as $flash" n:class="flash, $flash->type">
+            <script>
+                $(document).ready(function () {
+                    UIkit.notification({$flash->message}, {$flash->type});
+                });
+            </script>
+        </div>
+    {/snippet}
+
+    {include "@header.latte"}
+    {include content}
+	{include "@footer.latte"}
+
+    {include "_modals/@modal-sign.latte"}
+
+	{block scripts}
+
+        {include "@wysiwyg-init.latte"}
+        {include "@select2-init.latte"}
+        {*include "@cookies.latte"*}
+
+		<script src="https://nette.github.io/resources/js/3/netteForms.min.js"></script>
+		<script src="{$basePath}/www/frontend/js/uikit-icons.min.js"></script>
+         <script src="{$basePath}/www/admin/js/nette.ajax.js"></script>
+        <script src="{$basePath}/www/admin/js/select2.min.js"></script>
+        <script>
+            $(function () {
+                $.nette.init();
+            });
+        </script>
+
+        <script>
+            $.nette.ext('customDebug', {
+                success: function (payload) {
+                    history.pushState(null, '', payload.url);
+                }
+            });
+        </script>
+
+	{/block}
+</body>
+</html>

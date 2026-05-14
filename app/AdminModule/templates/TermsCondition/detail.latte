@@ -1,0 +1,53 @@
+{block content}
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+  <li><a>SEO</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label name /}
+          {input name}
+          {label content /}
+          {input content}
+          {label url /}
+          {input url}
+
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+    	</div>
+    </div>
+
+  </li>
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">SEO nastavení</h6>
+      </div>
+      <div class="card-body">
+        {form editSeoForm}
+          {label title /}
+          {input title}
+          {label description /}
+          {input description}
+          {label keywords /}
+          {input keywords}
+          
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+      </div>
+    </div>
+  </li>
+</ul>
+
+{/block}

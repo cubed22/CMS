@@ -1,0 +1,62 @@
+<header class="uk-sticky">
+  <div class="uk-container">
+    <nav class="uk-navbar-container uk-navbar-transparent navbar" uk-navbar>
+      <div class="left scale">
+        <a href="{link Homepage:default}">
+          <img class="logo logo-mobile-ultra" src="{$basePath}/www/upload/setting/logo/{$settingRecord->data()->logo}" alt="">
+          <img class="logo logo-mobile" src="{$basePath}/www/upload/setting/logo/{$settingRecord->data()->logo}" alt="">
+          <img class="logo logo-desktop" src="{$basePath}/www/upload/setting/logo/{$settingRecord->data()->logo}" alt="">
+        </a>
+      </div>
+      <div class="central mobile-off">
+        <ul class="uk-navbar-nav">
+          {control menu, 'topmenu'}
+        </ul>
+      </div>
+      <div class="right mobile-off">
+        {if $netteUser->isLoggedIn()}
+          <div class="dropdown-button">
+            <div class="button red red-shadow block narrow">
+              <div>{$frontendUser->getFullName()}</div>
+            </div>
+          </div>
+          <div class="uk-navbar-dropdown drop-user">
+            <a class="move-right" href="{link signOut!}"><span class="img"><img src="{$basePath}/www/frontend/images/icon_signout.png"></span><span>Odhlásit</span></a>
+          </div>
+        {else}
+          <a class="button red red-shadow" uk-toggle="target: #modal-sign">
+            Přihlásit
+          </a>
+        {/if}
+      </div>
+
+      <div class="uk-navbar-right mobile-on" style="position: relative;">
+        <a class="uk-navbar-toggle" href="#offcanvas-nav" uk-navbar-toggle-icon uk-toggle></a>
+      </div>
+    </nav>
+  </div>
+
+  <div id="offcanvas-nav" uk-offcanvas="flip: true">
+    <div class="uk-offcanvas-bar">
+      <button class="uk-offcanvas-close" type="button" uk-close></button>
+      {if $netteUser->isLoggedIn()}
+        <div style="font-size: 1.5rem; color: #FFF;">
+          <div><strong>{$frontendUser->getFullName()}</strong></div>
+        </div>
+        <hr>
+      {/if}
+      <ul class="uk-nav uk-nav-primary">
+        {if $netteUser->isLoggedIn()}
+          <li><a href="{link signOut!}">Odhlásit</a></li>
+        {else}
+          <li><a uk-toggle="target: #modal-sign">Přihlásit</a></li>
+          <li><a uk-toggle="target: #modal-register">Registrovat</a></li>
+        {/if}
+      </ul>
+      <hr>
+      <ul class="uk-nav uk-nav-primary">
+        {control menu 'topmenu'}
+      </ul>
+    </div>
+  </div>
+</header>

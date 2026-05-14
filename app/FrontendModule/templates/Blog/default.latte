@@ -1,0 +1,93 @@
+{block metaTitle}
+	Blog
+{/block}
+
+{block content}
+
+	<section class="main-head uk-visible@m">
+		<h1>Blog</h1>
+	</section>
+	<section class="breadcrumb uk-visible@m">
+		<span><a href="{link Homepage:default}">Úvod</a> / Blog</span>
+	</section>
+
+	<section class="blog">
+		<div class="uk-container">
+			<h2 style="margin-bottom: 5px;">Tipy, triky, inspirace ...</h2>
+			<div class="subheading small">
+				Váš zdroj pro svatební inspiraci, chytré plánovací tipy a nejnovější trendy.<br>
+				Na blogu najdete vše, co potřebujete vědět, abyste si svůj svatební den užili naplno. Čtěte, plánujte, inspirujte se!
+			</div>
+			<div class="filter">
+				<div uk-slider class="uk-position-relative">
+					<div class="uk-slider-container">
+						<div class="uk-slider-items">
+							<a class="filter-item {if $category == ''}active{/if} ajax" href="{link setCategory! ''}" onclick="$('.filter-item').removeClass('active');$(this).addClass('active');">
+								<strong>Všechny</strong> ({count($blogItems)})
+							</a>
+							{foreach $blogCategoriesItems as $item}
+								<a class="filter-item {if $item->data()->url == $category}active{/if} ajax" href="{link setCategory! $item->data()->url}" onclick="$('.filter-item').removeClass('active');$(this).addClass('active');">
+									<strong>{$item->data()->name}</strong> ({count($item->items())})
+								</a>
+							{/foreach}
+						</div>
+					</div>
+
+				 	<div class="uk-hidden@s">
+	          <a class="uk-position-center-left uk-position-small arrow" href uk-slider-item="previous">
+	          	<img src="{$basePath}/www/frontend/images/redesign/icons/arrow-left-new.png">
+	          </a>
+	          <a class="uk-position-center-right uk-position-small arrow" href uk-slider-item="next">
+	          	<img src="{$basePath}/www/frontend/images/redesign/icons/arrow-right-new.png">
+	          </a>
+	        </div>
+	        <div class="uk-visible@s">
+	          <a class="uk-position-center-left-out uk-position-small arrow left" href uk-slider-item="previous">
+	          	<img src="{$basePath}/www/frontend/images/redesign/icons/arrow-left-new.png">
+	          </a>
+	          <a class="uk-position-center-right-out uk-position-small arrow right" href uk-slider-item="next">
+	          	<img src="{$basePath}/www/frontend/images/redesign/icons/arrow-right-new.png">
+	          </a>
+      		</div>
+
+				</div>
+			</div>
+
+			{snippet itemsSnippet}
+		    <div class="items" uk-grid>
+		      {foreach $items as $item}
+		        <div class="uk-width-1-3@m uk-width-1-2@s">
+		        	<div class="item orange-shadow before-scale" {*uk-scrollspy="cls:uk-animation-slide-bottom;delay:{(($iterator->counter - 1) % 3) * 300}"*}>
+			          <a href="{link Blog:detail $item->data()->url}" class="pink-shadow">
+			            <div class="image" style="--bg-image: url('{if $item->data()->filename}{$basePath}/www/upload/blog/exact/{$item->data()->filename}{else}{$basePath}/www/admin/img/noimage.jpg{/if}');">
+		           	  </div>
+			            <div class="info">
+			            	<div class="time">{$item->data()->time|date:"j.n.Y"}</div>
+			              <div class="name">{$item->data()->name}</div>
+			              <div class="more">číst více</div>
+			            </div>
+			          </a>
+		          </div>
+		        </div>
+		      {/foreach}
+		    </div>
+		    {control pagination}
+		    {if $presenter->getParameter("do") == "pagination-page"}
+			    <script>
+			    	jQuery("html, body").animate({
+		            scrollTop: jQuery(".items").offset().top - 200
+		        }, 500);
+			    </script>
+		    {/if}
+	    {/snippet}
+		</div>
+	</section>
+
+
+	<style>
+		section.blog .items .item .image:before {
+			background-image: var(--bg-image);
+		}
+	</style>
+
+{/block}

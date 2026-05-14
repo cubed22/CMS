@@ -1,0 +1,33 @@
+{block content}
+
+<div class="back"><a href="{link Cron:default}"><i class="fas fa-chevron-left"></i> Zpět na výpis</a></div>
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label name /}
+          {input name}
+          {label method /}
+          {input method}
+          {label hour /}
+          {input hour}
+          {label minute /}
+          {input minute}
+          {input submit}
+        {/form}
+    	</div>
+    </div>
+  </li>
+
+</ul>
+
+{/block}

@@ -1,0 +1,49 @@
+
+<div id="modal-sign" class="modal" uk-modal>
+  <div class="uk-modal-dialog uk-modal-body">
+    <button class="uk-modal-close-default" type="button" uk-close></button>
+    <div class="modal-container">
+      <h2 class="uk-modal-title">Přihlášení</h2>
+      {form signInForm}
+        <ul class="errors uk-margin-top" n:if="$form->hasErrors()">
+          <li n:foreach="$form->errors as $error" style="color: red;">{$error}</li>
+        </ul>
+        <div>
+          {label username /}
+          {input username}
+        </div>
+        {label password /}
+        <div class="uk-position-relative">
+          {input password}
+          <div class="eyeIcon" onclick="loginShowPassword();">
+            <img src="{$basePath}/www/frontend/images/eye-icon.png">
+          </div>
+        </div>
+        <div class="uk-text-right submit-area">
+          {input submit}
+        </div>
+        {if $form->hasErrors()}
+          <script>
+            UIkit.modal('#modal-sign').show();
+          </script>
+        {/if}
+      {/form}
+    </div>
+  </div>
+</div>
+
+<script>
+  function loginShowPassword() {
+    var x = document.getElementById("frm-signInForm-password");
+    if (x.type === "password") {
+      x.type = "text";
+    } else {
+      x.type = "password";
+    }
+  } 
+  $(document).ready(function () {
+    {if $presenter->getParameter("modal") == "login"}
+      UIkit.modal('#modal-sign').show();
+    {/if}
+  });
+</script>

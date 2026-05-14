@@ -1,0 +1,20 @@
+
+{foreach $items as $item}
+  {if $item->data()->module !== ""}
+    {if $item->data()->object_id !== null}
+      {var $id = $item->data()->object_id}
+      {var $module = $presenter->getModules()->findByPropertyOne("module", $item->data()->module)}
+      {var $slug = $presenter->getUrl()->findByTableAndId($module->data()->table, $id)}
+      {continueIf !$slug}
+      {var $url = $presenter->link($item->data()->module . ":" . $item->data()->action, $slug)}
+    {else}
+      {var $url = $presenter->link($item->data()->module . ":" . $item->data()->action)}
+    {/if}
+  {else}
+    {var $url = $item->data()->url}
+  {/if}
+  <li class="">
+    <a class="" href="{$url}" {if $item->data()->blank}target="_blank"{/if}>{$item->data()->name}</a>
+  </li>
+{/foreach}
+  

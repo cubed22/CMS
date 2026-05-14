@@ -1,0 +1,84 @@
+{block content}
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Přidat cron</h6>
+  </div>
+	<div class="card-body">
+	  {form insertForm}
+	  	{label name /}
+	  	{input name}
+	  	{input submit}
+	  {/form}
+	</div>
+</div>
+
+<div class="card shadow mb-4">
+  <div class="card-header py-3">
+    <h6 class="m-0 font-weight-bold text-primary">Výpis cron úloh</h6>
+  </div>
+  {snippet itemsSnippet}
+  	<div class="card-body">
+      {if count($cronItems)}
+    	  <div class="table-responsive">
+          <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Název</th>
+                <th>Hodina spuštění</th>
+                <th>Minuta spuštění</th>
+                <th>Poslední spuštění</th>
+                <th>Další spuštění</th>
+                <th class="actions">Akce</th>
+              </tr>
+            </thead>
+            <thead>
+              <tr>
+                <th><input type="text" name="search" id="search-name" style="width: 100%;"></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {foreach $cronItems as $item}
+                <tr class="{if !$item->data()->active}inactive{/if}">
+                  <td class="name"><a href="{link Cron:detail $item->data()->id}">{$item->data()->name}</a></td>
+                  <td>{$item->data()->hour}</td>
+                  <td>{$item->data()->minute}</td>
+                  <td>{$item->data()->last_exec|date:"j.n.Y H:i:s"}</td>
+                  <td>{$item->data()->next_exec|date:"j.n.Y H:i:s"}</td>
+                  <td class="actions">
+                    <a uk-tooltip="Aktivní/Neaktivní" class="btn btn-light btn-sm ajax" href="{link toggleActive! $item->data()->id}"><i class="fas fa-power-off"></i></a>
+                    <a uk-tooltip="Upravit" class="btn btn-primary btn-sm" href="{link Cron:detail $item->data()->id}"><i class="fas fa-edit"></i></a>
+                    <a uk-tooltip="Odstranit" class="btn btn-danger btn-sm" href="{link remove! $item->data()->id}" onclick="return confirm('Opravdu odebrat?');"><i class="fas fa-trash"></i></a>
+                  </td>
+                </tr>
+              {/foreach}
+            </tbody>
+          </table>
+    	  </div>
+      {else}
+        <p>Nenalezen žádný záznam.</p>
+      {/if}
+  	</div>
+  {/snippet}
+</div>
+
+{* Very simple search *}
+<script>
+  $('#search-name').on('input', function(){ 
+    const val = $(this).val().toLowerCase();
+    $(".name").closest("tr").hide();
+    $(".name").each(function(){
+      const text = $(this).text().toLowerCase(); 
+      if(text.indexOf(val) !== -1) { 
+        $(this).closest("tr").show();
+      }
+    });
+  });
+</script>
+
+{/block}

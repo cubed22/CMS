@@ -1,0 +1,34 @@
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
+<script>
+
+  function uploadImage(file) {
+    var data = new FormData();
+    data.append('file', file);
+
+    $.ajax({
+      url: {link :Admin:Admin:tinymceInsertImage},
+      method: 'POST',
+      data: data,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        var imageUrl = response.url;
+        $('.editor').summernote('insertImage', imageUrl);
+      },
+      error: function() {
+        alert('Nepodařilo se nahrát obrázek.');
+      }
+    });
+}
+
+  $(document).ready(function() {
+    $('.editor').summernote({
+      height: 500,
+      toolbar: [
+        // [groupName, [list of button]]
+        ['style', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+      ]
+    });
+  });
+</script>

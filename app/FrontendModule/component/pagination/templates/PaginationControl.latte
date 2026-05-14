@@ -1,0 +1,56 @@
+
+  <ul class="pagination" uk-scrollspy="cls:uk-animation-slide-bottom;">
+
+    <li class="page-item{if $page == 1} disabled{/if} arrow">
+      {if $page === 1}
+        <span class="page-link"><img src="{$basePath}/www/frontend/images/icons/arrow-left.png"></span>
+      {else}
+        <a class="page-link ajax" href="{link page! $page-1}"><img src="{$basePath}/www/frontend/images/icons/arrow-left.png"></a>
+      {/if}
+    </li>
+
+    {var $firstPage = 1}
+    {if $page - 2 > 2}
+      {var $firstPage = $page - 2}
+      <li class="page-item">
+        <a class="page-link ajax" href="{link page! 1}">1</a>
+      </li>
+      <li class="page-item dots">
+        <span class="">...</span>
+      </li>
+    {/if}
+    {var $lastPage = $totalPages}
+    {if $page + 2 < $totalPages - 1}
+      {var $lastPage = $page + 2}
+    {/if}
+
+    {for $i = $firstPage; $i <= $lastPage; $i++}
+      <li class="page-item{if $page === $i} disabled active{/if}">
+        {if $page === $i}
+          <span class="page-link">{$i}</span>
+        {else}
+          <a class="page-link ajax" href="{link page! $i}">{$i}</a>
+        {/if}
+      </li>
+    {/for}
+
+    {if $page + 2 < $totalPages - 1}
+      <li class="page-item dots">
+        <span class="">...</span>
+      </li>
+      <li class="page-item">
+        <a class="page-link ajax" href="{link page! $totalPages}">{$totalPages}</a>
+      </li>
+      
+    {/if}
+
+    <li class="page-item{if $page === $totalPages} disabled{/if} arrow">
+      {if $page === $totalPages}
+        <span class="page-link"><img src="{$basePath}/www/frontend/images/icons/arrow-right.png"></span>
+      {else}
+        <a class="page-link ajax" href="{link page! $page+1}"><img src="{$basePath}/www/frontend/images/icons/arrow-right.png"></a>
+      {/if}
+    </li>
+
+  </ul>
+

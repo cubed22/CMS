@@ -1,0 +1,27 @@
+{block content}
+
+<div class="back"><a href="{link Menu:default}"><i class="fas fa-chevron-left"></i> Zpět na výpis</a></div>
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label label /}
+          {input label}
+          
+          {input submit}
+        {/form}
+        {include "../@info.latte", record => $record}
+    	</div>
+    </div>
+  </li>
+
+{/block}

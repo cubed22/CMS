@@ -1,0 +1,85 @@
+{block content}
+
+<div class="back"><a href="{link Message:default}"><i class="fas fa-chevron-left"></i> Zpět na výpis</a></div>
+
+<ul uk-switcher uk-tab>
+  <li><a>Obecné</a></li>
+  <li class="{if $presenter->getParameter('tab') == 'sen'}uk-active{/if}"><a>Odeslané e-maily ({count($logMessages)})</a></li>
+</ul>
+
+<ul class="uk-switcher uk-margin">
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Obecné nastavení</h6>
+      </div>
+    	<div class="card-body">
+    	  {form editForm}
+          {label name /}
+          {input name}
+          {label subject /}
+          {input subject}
+          {if $record->data()->variables}
+            <div class="uk-card uk-card-small uk-card-default uk-card-body uk-width-1-1 uk-margin-top">
+              {$record->data()->variables|noescape}
+            </div>
+          {/if}
+          {label body /}
+          {input body}
+          {input submit}
+        {/form}
+    	</div>
+    </div>
+  </li>
+
+  <li>
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Odeslané e-maily</h6>
+      </div>
+      {snippet itemsSnippet}
+        <div class="card-body">
+          {if count($logMessages)}
+            <div class="table-responsive">
+              <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th>Čas odeslání</th>
+                    <th>Předmět</th>
+                    <th>Adresát</th>
+                    <th class="actions">Akce</th>
+                  </tr>
+                </thead>
+                {*<thead>
+                  <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                </thead>*}
+                <tbody>
+                  {foreach $logMessages as $item}
+                    <tr>
+                      <td>{$item->data()->time|date:"j.n.Y H:i:s"}</td>
+                      <td><a href="{link :Frontend:EmailWeb:detail $item->data()->id}" target="_blank">{$item->data()->subject}</a></td>
+                      <td style="max-width: 400px;">{$item->data()->address}</td>
+                      <td class="actions">
+                        <a uk-tooltip="Zobrazit náhled" class="btn btn-light btn-sm" href="{link :Frontend:EmailWeb:detail $item->data()->id}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                      </td>
+                    </tr>
+                  {/foreach}
+                </tbody>
+              </table>
+            </div>
+          {else}
+            <p>Nenalezen žádný záznam.</p>
+          {/if}
+        </div>
+      {/snippet}
+    </div>
+  </li>
+
+</ul>
+
+{/block}

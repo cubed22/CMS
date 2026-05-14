@@ -1,0 +1,21 @@
+{block content}
+
+<section class="banner">
+    <div uk-slideshow="autoplay: true;min-height: 580; max-height: 750;pause-on-hover: false;" style="position: relative;">
+        <div class="uk-slideshow-items">
+            {foreach $slideshowItems as $item}
+                <div class="uk-position-top">
+                    <img src="{$basePath}/www/upload/slideshow/{$item->data()->filename}" alt="" uk-cover>
+                    <div class="uk-container">
+                        <div class="banner-text gray">
+                        <h1>{$item->data()->name}</h1>
+                        <div>{$item->data()->title}</div>
+                        </div>
+                    </div>
+                </div>
+            {/foreach}
+        </div>
+    </div>
+</section>
+
+{/block}

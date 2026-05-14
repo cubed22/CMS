@@ -1,0 +1,41 @@
+search:
+	-
+		in: %appDir%
+		classes:
+			- *Factory
+			- *Facade
+
+
+services:
+	- App\Router\RouterFactory::createRouter
+
+	- App\FrontendModule\Translator\FrontendTranslator
+
+	- App\Model\Blog
+	- App\Model\BlogCategories
+	- App\Model\Cronmaster
+	- App\Model\LogMessages
+	- App\Model\Mailer
+	- App\Model\Menu
+	- App\Model\Messages
+	- App\Model\Modules
+	- App\Model\Pages
+	- App\Model\PersonalDataProtections
+	- App\Model\Settings
+	- App\Model\Slideshow
+	- App\Model\TermsConditions
+	- App\Model\Url
+	- App\Model\Users
+	
+	- App\Components\IPaginationControlFactory
+	- App\Components\IMenuControlFactory
+
+	frontAuthenticator:
+		class:			App\FrontendModule\Authenticator\FrontendAuthenticator
+		autowired: self
+
+	adminAuthenticator:
+		class:			App\AdminModule\Authenticator\AdminAuthenticator
+		autowired: self
+
+	mail.mailer: Nette\Mail\SendmailMailer
