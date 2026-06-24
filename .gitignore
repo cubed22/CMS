@@ -1,2 +1,4 @@
-www/frontend/cache/
-www/admin/cache/
+www/frontend/cache/*
+!www/frontend/cache/.gitkeep
+www/admin/cache/*
+!www/admin/cache/.gitkeep

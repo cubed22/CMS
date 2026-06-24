@@ -70,9 +70,6 @@ label:not(:first-of-type) {
 .subcategory-image {
 	max-width: 40px;
 }
-.checkbox-wrapper {
-	margin-top: 15px;
-}
 .checkbox-wrapper label {
 	width: 100%;
 	margin-top: 0;
