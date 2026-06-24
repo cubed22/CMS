@@ -4,7 +4,7 @@ namespace App\Model;
 /**
  * Blog model class for managing blog posts and categories.
  */
-class Blog extends BaseModel
+class Blog extends LocalizedModel
 {
     /** @var string */
     protected static $tableMain = "blog";
@@ -44,7 +44,7 @@ class Blog extends BaseModel
     }
 }
 
-class BlogRecord extends BaseRecord
+class BlogRecord extends LocalizedRecord
 {
     /** @var string */
     protected static $tableImage = "blog_images";

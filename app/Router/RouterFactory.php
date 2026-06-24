@@ -20,6 +20,7 @@ final class RouterFactory
 		\App\Model\TermsConditions $termsConditions,
 		\App\Model\PersonalDataProtections $pdp,
         \App\Model\Pages $pages,
+        \App\Model\LanguageModel $languages,
 	): RouteList 
 	{
 		$router = new RouteList;
@@ -28,10 +29,10 @@ final class RouterFactory
 			->addRoute('admin/<presenter>/<action>[/<id>]', 'Homepage:default');
 
 		$router->withModule('Frontend')
-			->addRoute('', 'Homepage:default')
+			->addRoute('[<lang=cz en|cz|sk>/]', 'Homepage:default')
             ->addRoute('cron', 'Cron:default')
             
-            ->addRoute('blog[/<category>]', 'Blog:default')
+            ->addRoute('[<lang=cz en|cz|sk>/]blog[/<category>]', 'Blog:default')
 
             // prihlaseni a registrace
             ->addRoute('prihlaseni', 'Sign:in')
@@ -41,13 +42,15 @@ final class RouterFactory
 
             ->addRoute('emailWeb/<id>', 'EmailWeb:detail');
 
-		foreach ($blog->findAll(['url NOT ?' => NULL]) as $item) {
-            $router->addRoute($item->data()->url, [
-                'module'    => 'Frontend',
-                'presenter' => 'Blog',
-                'action'    => 'detail',
-                'url'       => $item->data()->url
-            ]);
+        foreach ($languages->findAll() as $language) {
+            foreach ($blog->findAll($language->data()->shortcut, ['url NOT ?' => NULL]) as $item) {
+                $router->addRoute($item->locale()->url, [
+                    'module'    => 'Frontend',
+                    'presenter' => 'Blog',
+                    'action'    => 'detail',
+                    'url'       => $item->locale()->url
+                ]);
+            }
         }
 
         foreach ($blogCategories->findAll(['url NOT ?' => NULL]) as $item) {

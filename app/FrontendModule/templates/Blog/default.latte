@@ -13,10 +13,9 @@
 
 	<section class="blog">
 		<div class="uk-container">
-			<h2 style="margin-bottom: 5px;">Tipy, triky, inspirace ...</h2>
+			<h2 style="margin-bottom: 5px;">Blog</h2>
 			<div class="subheading small">
-				Váš zdroj pro svatební inspiraci, chytré plánovací tipy a nejnovější trendy.<br>
-				Na blogu najdete vše, co potřebujete vědět, abyste si svůj svatební den užili naplno. Čtěte, plánujte, inspirujte se!
+				Seznam blogových článků, které se týkají našich produktů, novinek a zajímavostí z oboru.
 			</div>
 			<div class="filter">
 				<div uk-slider class="uk-position-relative">
@@ -63,7 +62,7 @@
 		           	  </div>
 			            <div class="info">
 			            	<div class="time">{$item->data()->time|date:"j.n.Y"}</div>
-			              <div class="name">{$item->data()->name}</div>
+			              <div class="name">{$item->locale()->name}</div>
 			              <div class="more">číst více</div>
 			            </div>
 			          </a>

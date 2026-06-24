@@ -62,7 +62,7 @@ final class BlogPresenter extends FrontendPresenter
 		parent::beforeRender();
 
 		$this->template->blogCategoriesItems = $this->blogCategories->findAll();
-		$this->template->blogItems = $this->blog->findAll(["active" => 1]);
+		$this->template->blogItems = $this->blog->findAll($this->locale(), ["active" => 1]);
 	}
 
 	/**
@@ -114,7 +114,7 @@ final class BlogPresenter extends FrontendPresenter
 			}
 		}
 
-		$items = $this->blog->findAll($where, "time DESC");
+		$items = $this->blog->findAll($this->locale(), $where, "time DESC");
 		
 		$this['pagination']->itemsPerPage = self::ITEMS_PER_PAGE;
 		$this['pagination']->totalItems = count($items);

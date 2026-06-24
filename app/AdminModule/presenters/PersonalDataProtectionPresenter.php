@@ -125,8 +125,8 @@ final class PersonalDataProtectionPresenter extends AdminPresenter
 
 		$form->addHidden("id");
 		$form->addText("title", "Titulek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->title);
-		$form->addText("description", "Popisek")->setHtmlAttribute("class", "uk-input ")->setDefaultValue($record->data()->description);
-		$form->addText("keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input ")->setDefaultValue($record->data()->keywords);
+		$form->addText("description", "Popisek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->description);
+		$form->addText("keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->keywords);
 		$form->addSubmit("submit", "Uložit")->setHtmlAttribute("class", "btn btn-primary uk-margin-top");
 
 		$form->onSuccess[] = [$this, 'editSeoFormSucceeded'];

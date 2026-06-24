@@ -16,6 +16,9 @@ use App\FrontendModule\Translator\FrontendTranslator;
  */
 class FrontendPresenter extends Nette\Application\UI\Presenter
 {
+    /** @persistent */
+    public string $lang;
+
     /** @var FrontendAuthenticator Frontend authenticator for user authentication */
     private FrontendAuthenticator $frontAuthenticator;
 
@@ -327,6 +330,11 @@ class FrontendPresenter extends Nette\Application\UI\Presenter
     {
         return $this->modules;
     }
+
+    public function locale()
+    {
+        return $this->lang;
+    }
     
     /**
      * Perform presenter startup actions.
@@ -336,6 +344,13 @@ class FrontendPresenter extends Nette\Application\UI\Presenter
     protected function startup(): void
     {
         parent::startup();
+        
+        // localization handling
+        $session = $this->getSession()->getSection('lang');
+        $lang = $this->getParameter('lang') ?? $session->lang ?? 'cz';
+        $session->lang = $lang;
+        $this->lang = $lang;
+
         $this->getUser()->setAuthenticator($this->getAuthenticator());
 
         /** @var Nette\Bridges\SecurityHttp\SessionStorage $storage */
@@ -397,7 +412,7 @@ class FrontendPresenter extends Nette\Application\UI\Presenter
             return \CssMin::minify($code);
         });
 
-        $control = new \WebLoader\Nette\CssLoader($compiler, './www/frontend/cache');
+        $control = new \WebLoader\Nette\CssLoader($compiler, $this->getHttpRequest()->getUrl()->getBasePath() . 'www/frontend/cache');
         $control->setMedia('screen');
 
         return $control;
@@ -411,7 +426,7 @@ class FrontendPresenter extends Nette\Application\UI\Presenter
     public function beforeRender()
     {
         $this->template->netteUser = $this->getUser();
-        $this->template->blogItems = $this->getBlog()->findAll(["active" => 1], 'time DESC');
+        $this->template->blogItems = $this->getBlog()->findAll($this->locale(), ["active" => 1], 'time DESC');
         $termsConditionRecord = $this->getTermsConditions()->find(1);
         $this->template->termsCondition = $termsConditionRecord;
         $this->template->termsConditionTime = $termsConditionRecord->data()->time_modify;
