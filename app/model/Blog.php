@@ -10,6 +10,9 @@ class Blog extends LocalizedModel
     protected static $tableMain = "blog";
 
     /** @var string */
+    protected static $tableLocale = "blog_lang";
+
+    /** @var string */
     protected static $tableImage = "blog_images";
 
     /** @var string */
@@ -17,6 +20,9 @@ class Blog extends LocalizedModel
 
     /** @var string */
     protected static $recordImageClass = BlogImageRecord::class;
+
+    /** @var string */
+    protected static $relatedColumn = "blog_id";
 
     /**
      * Add a blog post to a category.

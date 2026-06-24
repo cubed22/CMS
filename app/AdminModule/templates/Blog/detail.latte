@@ -16,8 +16,6 @@
       </div>
     	<div class="card-body">
     	  {form editForm}
-          {label name /}
-          {input name}
           <div class="checkbox-wrapper">
             {label active /}
             {input active}
@@ -26,10 +24,29 @@
           {input categories}
           {label time /}
           {input time}
-          {label content, style => "margin-top: 10px;" /}
-          {input content}
-          {label url /}
-          {input url}
+
+          <div class="lang-wrapper">
+            <ul id="lang-nav" class="uk-tab" uk-tab="connect: #lang-switcher">
+              {foreach $presenter->getAllLanguages() as $lang}
+                <li class="{if $lang->data()->shortcut == $presenter->locale()}uk-active{/if}"><a>{$lang->data()->name}</a></li>
+              {/foreach}
+            </ul>
+
+            <ul id="lang-switcher" class="uk-switcher">
+              {foreach $presenter->getAllLanguages() as $lang}
+                <li>
+                  {var $shortCut = $lang->data()->shortcut}
+                  {label $shortCut . "_name" /}
+                  {input $shortCut . "_name"}
+                  {label $shortCut . "_content", style => "margin-top: 10px;" /}
+                  {input $shortCut . "_content"}
+                  {label $shortCut . "_url" /}
+                  {input $shortCut . "_url"}
+                </li>
+              {/foreach}
+            </ul>
+          </div>
+
           {label image /}
           
           <div style="display: flex; align-items: center;">

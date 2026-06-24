@@ -44,7 +44,7 @@
               {foreach $blogItems as $item}
                 <tr class="{if !$item->data()->active}inactive{/if}">
                   <td style="width: 100px; text-align: center;"><a><img style="max-height: 50px; max-width: 50px;" src="{if $item->data()->filename}{$basePath}/www/upload/blog/small/{$item->data()->filename}{else}{$basePath}/www/admin/img/noimage.jpg{/if}"></a></td>
-                  <td class="name"><a href="{link Blog:detail $item->data()->id}">{$item->data()->name}</a></td>
+                  <td class="name"><a href="{link Blog:detail $item->data()->id}">{$item->locale()->name}</a></td>
                   <td>{$item->data()->time|date:"j.n.Y"}</td>
                   <td>
                     {var $separator = ""}
@@ -53,7 +53,7 @@
                     {/foreach}
                   </td>
                   <td class="actions">
-                    <a uk-tooltip="Zobrazit náhled" class="btn btn-light btn-sm" href="{link :Frontend:Blog:detail $item->data()->url, 'admin' => 1}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                    <a uk-tooltip="Zobrazit náhled" class="btn btn-light btn-sm" href="{link :Frontend:Blog:detail $item->locale()->url, 'admin' => 1, 'lang' => $presenter->locale()}" target="_blank"><i class="fas fa-external-link-alt"></i></a>
                     <a uk-tooltip="Aktivní/Neaktivní" class="btn btn-light btn-sm ajax" href="{link toggleActive! $item->data()->id}"><i class="fas fa-power-off"></i></a>
                     <a uk-tooltip="Upravit" class="btn btn-primary btn-sm" href="{link Blog:detail $item->data()->id}"><i class="fas fa-edit"></i></a>
                     <a uk-tooltip="Odstranit" class="btn btn-danger btn-sm" href="{link remove! $item->data()->id}" onclick="return confirm('Opravdu odebrat?');"><i class="fas fa-trash"></i></a>

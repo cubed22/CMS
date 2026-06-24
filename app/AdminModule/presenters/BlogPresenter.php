@@ -2,6 +2,7 @@
 namespace App\AdminModule\Presenters;
 
 use Nette\Application\UI\Form;
+use Nette\Application\UI\Multiplier;
 use App\Model;
 use Nette\Utils\Image;
 
@@ -52,7 +53,7 @@ final class BlogPresenter extends AdminPresenter
     public function renderDefault()
     {
         $this->template->headerName = "Blog";
-        $this->template->blogItems = $this->blog->findAll(null, "time DESC");
+        $this->template->blogItems = $this->blog->findAll($this->locale(), null, "time DESC");
     }
 
     /**
@@ -63,7 +64,7 @@ final class BlogPresenter extends AdminPresenter
     public function getRecord()
     {
         $id = $this->getParameter('id');
-        $record = $this->blog->find($id);
+        $record = $this->blog->find($id, $this->locale());
         return $record;
     }
 
@@ -75,7 +76,7 @@ final class BlogPresenter extends AdminPresenter
      */
     public function actionDetail($id)
     {
-        $record = $this->blog->find($id);
+        $record = $this->blog->find($id, $this->locale());
         if (!$record)
             $this->error("Článek nenalezen.");
 
@@ -168,7 +169,6 @@ final class BlogPresenter extends AdminPresenter
         $record = $this->getRecord();
 
         $form->addHidden("id");
-        $form->addText("name", "Název")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->name);
         $form->addText("time", "Datum")->setHtmlAttribute("class", "uk-input flatpickr-date")->setDefaultValue(date("Y-m-d H:i", $record->data()->time));
 
         $form->addCheckbox("active", "Zveřejněný?")->setHtmlAttribute("class", "uk-checkbox")->setDefaultValue($record->data()->active);
@@ -184,8 +184,13 @@ final class BlogPresenter extends AdminPresenter
         }
         $form->addMultiSelect("categories", "Kategorie/Štítky", $items)->setHtmlAttribute("class", "uk-select select2-multiple")->setDefaultValue($selectedItems);
 
-        $form->addTextarea("content", "Obsah")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->data()->content)->setHtmlAttribute('rows', 40);
-        $form->addText("url", "Tvar URL")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->url);
+        foreach ($this->getAllLanguages() as $lang) {
+            $shortCut = $lang->data()->shortcut;
+            $form->addText($shortCut . "_name", "Název")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->name);
+            $form->addTextarea($shortCut . "_content", "Obsah")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->content)->setHtmlAttribute('rows', 40);
+            $form->addText($shortCut . "_url", "Tvar URL")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->url);
+        }
+
         $form->addUpload("image", "Obrázek")->setHtmlAttribute("style", "width: 100%;");
         $form->addSubmit("submit", "Uložit")->setHtmlAttribute("class", "btn btn-primary uk-margin-top");
 
@@ -197,16 +202,19 @@ final class BlogPresenter extends AdminPresenter
      * Handle successful edit form submission.
      *
      * @param Form $form
-     * @param array $values
+     * @param \Nette\Utils\ArrayHash $values
      * @return void
      */
-    public function editFormSucceeded(Form $form, $values)
+    public function editFormSucceeded(Form $form, \Nette\Utils\ArrayHash $values)
     {
         $time = time();
 
         $record = $this->getRecord();
         if (! $record) 
             $this->error("Článek nenalezen.");
+
+        $locals = $this->parseLocalizedValues($values);
+        $this->verifyUrl($record, $locals);
 
         if ($values["time"] == "") {
             $values["time"] = null;
@@ -227,9 +235,6 @@ final class BlogPresenter extends AdminPresenter
 
         unset($values["categories"]);
         
-        if ($values["url"] != $record->data()->url) {
-            $values["url"] = $this->url->getUrl($values["url"]);
-        }
         $values["time_modify"] = $time;
         $values["modify_user_id"] = $this->getAdminUser()->data()->id;
 
@@ -260,7 +265,7 @@ final class BlogPresenter extends AdminPresenter
 
         unset($values["image"]);
 
-        $record->update($values);
+        $record->update($values, $locals);
         $this->flashMessage("Článek byl uložen.");
 
         $this->redirect("this");

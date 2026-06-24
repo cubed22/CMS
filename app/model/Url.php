@@ -21,7 +21,7 @@ class Url extends BaseModel
             $newUrl = $this->transform($url) . "-" . $iterator;
         }
 
-        $blog = $this->getDatabase()->table( "blog" )->where( "url", $newUrl )->fetch();
+        $blog = $this->getDatabase()->table( "blog_lang" )->where( "url", $newUrl )->fetch();
         $page = $this->getDatabase()->table( "pages" )->where( "url", $newUrl )->fetch();
         $blogCategory = $this->getDatabase()->table( "blog_categories" )->where( "url", $newUrl )->fetch();
         $pdp = $this->getDatabase()->table( "personal_data_protection" )->where( "url", $newUrl )->fetch();
@@ -71,9 +71,14 @@ class Url extends BaseModel
      * @param int $id The ID of the record to find.
      * @return string|false The URL string if found, or false if not found.
      */
-    public function findByTableAndId($table, $id) 
+    public function findByTableAndId($table, $id, $lang = null) 
     {
-        $data = $this->getDatabase()->table( $table )->where( "id", $id )->limit( 1 )->fetch();
+        if ($table == "blog_lang") {
+            $data = $this->getDatabase()->table($table)->where($table . ".id", $id)->where("lang_id.shortcut", $lang)->limit(1)->fetch();
+        } else {
+            $data = $this->getDatabase()->table($table)->where("id", $id)->limit(1)->fetch();
+        }
+        
 
         if ( $data )
             return $data->url;

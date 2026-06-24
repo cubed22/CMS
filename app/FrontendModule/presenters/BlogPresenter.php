@@ -73,7 +73,7 @@ final class BlogPresenter extends FrontendPresenter
 	 */
 	public function actionDetail($url) 
 	{
-		$record = $this->blog->findByUrl($url);
+		$record = $this->blog->findByUrl($url, $this->locale());
     	if (!$record) 
       		$this->error("Článek nenalezen.");
 

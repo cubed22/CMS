@@ -34,9 +34,7 @@ label {
 label:not(:first-of-type) {
 	margin-top: 1.3rem;
 }
-.back {
-	/*margin: 20px;*/
-}
+
 .back a {
 	color: #1e1e1e;
 }
@@ -169,4 +167,16 @@ input[type="checkbox"] {
 
 .note-editable {
 	color: #000;
+}
+
+.lang-wrapper {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+.lang-wrapper .uk-tab {
+  margin-bottom: 20px;
+}
+.lang-wrapper input {
+	background-color: #f9f9f9;
 }

@@ -4,7 +4,7 @@
     {if $item->data()->object_id !== null}
       {var $id = $item->data()->object_id}
       {var $module = $presenter->getModules()->findByPropertyOne("module", $item->data()->module)}
-      {var $slug = $presenter->getUrl()->findByTableAndId($module->data()->table, $id)}
+      {var $slug = $presenter->getUrl()->findByTableAndId($module->data()->table, $id, $presenter->locale())}
       {continueIf !$slug}
       {var $url = $presenter->link($item->data()->module . ":" . $item->data()->action, $slug)}
     {else}

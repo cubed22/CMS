@@ -26,7 +26,7 @@ final class RouterFactory
 		$router = new RouteList;
 		
 		$router->withModule('Admin') 
-			->addRoute('admin/<presenter>/<action>[/<id>]', 'Homepage:default');
+			->addRoute('admin/[<lang=cz en|cz|sk>/]<presenter>/<action>[/<id>]', 'Homepage:default');
 
 		$router->withModule('Frontend')
 			->addRoute('[<lang=cz en|cz|sk>/]', 'Homepage:default')
@@ -43,12 +43,14 @@ final class RouterFactory
             ->addRoute('emailWeb/<id>', 'EmailWeb:detail');
 
         foreach ($languages->findAll() as $language) {
-            foreach ($blog->findAll($language->data()->shortcut, ['url NOT ?' => NULL]) as $item) {
-                $router->addRoute($item->locale()->url, [
+            $shortcut = $language->data()->shortcut;
+            foreach ($blog->findAll($shortcut, ['url NOT ?' => NULL]) as $item) {
+                $router->addRoute('[<lang=cz>/]' . $item->locale($shortcut)->url, [
                     'module'    => 'Frontend',
                     'presenter' => 'Blog',
                     'action'    => 'detail',
-                    'url'       => $item->locale()->url
+                    'lang'      => $shortcut,
+                    'url'       => $item->locale($shortcut)->url
                 ]);
             }
         }

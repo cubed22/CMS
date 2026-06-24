@@ -10,6 +10,9 @@ use App\Model;
  */
 class AdminPresenter extends Presenter
 {
+    /** @persistent */
+    public string $lang;
+
     /** @var Model\Users */
     private Model\Users $users;
 
@@ -36,6 +39,12 @@ class AdminPresenter extends Presenter
 
     /** @var Model\Slideshow */
     private Model\Slideshow $slideshow;
+
+    /** @var Model\LanguageModel */
+    private Model\LanguageModel $languages;
+
+    /** @var Model\Url */
+    private Model\Url $url;
 
     /**
      * Inject the settings model.
@@ -209,6 +218,64 @@ class AdminPresenter extends Presenter
     }
 
     /**
+     * Inject the languages model.
+     *
+     * @param Model\LanguageModel $languages
+     * @return void
+     */
+    public function injectLanguages(Model\LanguageModel $languages)
+    {
+        $this->languages = $languages;
+    }
+
+    /**
+     * @return Model\LanguageModel
+     */
+    public function getLanguages()
+    {
+        return $this->languages;
+    }
+
+    /**
+     * Inject the URL model.
+     *
+     * @param Model\Url $url
+     * @return void
+     */
+    public function injectUrl(Model\Url $url)
+    {
+        $this->url = $url;
+    }
+
+    /**
+     * @return Model\Url
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * Get the current locale.
+     *
+     * @return string
+     */
+    public function locale()
+    {
+        return $this->lang;
+    }
+
+    /**
+     * Get all available languages.
+     *
+     * @return array
+     */
+    public function getAllLanguages()
+    {
+        return $this->getLanguages()->findAll();
+    }
+
+    /**
      * Handle WYSIWYG image upload.
      *
      * @return void
@@ -241,6 +308,12 @@ class AdminPresenter extends Presenter
      */
     public function beforeRender(): void
     {
+        // localization handling
+        $session = $this->getSession()->getSection('adminLang');
+        $lang = $this->getParameter('lang') ?? $session->lang ?? 'cz';
+        $session->lang = $lang;
+        $this->lang = $lang;
+
         $user = $this->getAdminUser();
         $this->template->adminUser = $user;
 
@@ -336,5 +409,47 @@ class AdminPresenter extends Presenter
         $control->setMedia('screen');
 
         return $control;
+    }
+
+    /**
+     * Parse localized values from form submission.
+     *
+     * @param \Nette\Utils\ArrayHash &$values
+     * @return array
+     */
+    public function parseLocalizedValues(\Nette\Utils\ArrayHash &$values)
+    {
+        $locals = [];
+        foreach ($values as $key => $value) {
+            if (strpos($key, "_") !== false) {
+                $parts = explode("_", $key, 2);
+                $lang = $parts[0];
+                $field = $parts[1];
+                unset($values[$key]);
+                if (!isset($locals[$lang])) {
+                    $locals[$lang] = [];
+                }
+                $locals[$lang][$field] = $value;
+            }
+        }
+        return $locals;
+    }
+
+    /**
+     * Verify and sanitize URLs in localized values.
+     *
+     * @param Model\LocalizedRecord $record
+     * @param mixed &$locals
+     * @return void
+     */
+    public function verifyUrl($record, mixed &$locals) 
+    {
+        foreach ($locals as $lang => &$localValues) {
+            if (isset($localValues['url'])) {
+                if ($record->locale($lang)->url != $localValues['url']) {
+                    $localValues['url'] = $this->getUrl()->getUrl($localValues['url']);
+                }
+            }
+        }
     }
 }

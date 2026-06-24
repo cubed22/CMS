@@ -52,7 +52,7 @@ final class HomepagePresenter extends AdminPresenter
         $this->template->headerName = "Hlavní stránka";
 
         $lastItem = false;
-        $items = $this->blog->findAll(null, "time_create DESC", 1);
+        $items = $this->blog->findAll(null, null, "time_create DESC", 1);
         if (count($items)) {
             $lastItem = $items[0];
         }

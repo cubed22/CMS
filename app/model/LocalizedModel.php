@@ -2,7 +2,6 @@
 namespace App\Model;
 
 use Nette;
-use App\Model;
 
 /**
  * Base model class providing common database operations for all models.
@@ -13,6 +12,9 @@ class LocalizedModel extends BaseModel
 
 	/** @var string */
 	protected static $tableLocale = '';
+
+    /** @var string */
+	protected static $relatedColumn = '';
 
     /** @const LANG_POSTFIX Pripona pro tabulky s lokalizacemi */
     const LANG_POSTFIX = '_lang';
@@ -26,6 +28,42 @@ class LocalizedModel extends BaseModel
     public function __construct(Nette\Database\Explorer $database)
     {
         parent::__construct($database);
+    }
+
+    /**
+     * Find a record by ID.
+     *
+     * @param int $id
+     * @return mixed
+     */
+    public function find($id, ?string $locale = null)
+    {
+        $data = $this->getDatabase()->table(static::$tableMain)->where("id", $id)->fetch();
+
+        if ($data)
+            return new static::$recordClass($data, $locale);
+
+        return false;
+    }
+
+    /**
+     * Find a record by URL.
+     *
+     * @param string $url
+     * @return mixed
+     */
+    public function findByUrl($url, ?string $locale = null)
+    {
+        $localeData = $this->getDatabase()->table(static::$tableLocale)->where("url", $url)->where("lang_id.shortcut", $locale)->fetch();
+
+        if ($localeData) {
+            $data = $this->getDatabase()->table(static::$tableMain)->where("id", $localeData[static::$relatedColumn])->fetch();
+
+            if ($data)
+                return new static::$recordClass($data, $locale);
+        }
+
+        return false;
     }
 
     /**
@@ -141,7 +179,9 @@ class LocalizedRecord extends BaseRecord
      */
 	public function update($data, $locals = [])
     {
-        unset($values['id']);
+        unset($data['id']);
+        bdump($data);
+        bdump($locals);
         $this->data()->update($data);
         foreach ($locals as $locale => $values) {
             $this->locale($locale)->update($values);

@@ -21,7 +21,7 @@
     {/if}
     {if $presenter->getName() == "Admin:Blog" && isset($record)}
       <li class="nav-item dropdown no-arrow mx-1">
-        <a class="nav-link" target="_blank" href="{link :Frontend:Blog:detail $record->data()->url}" style="color: #900;">
+        <a class="nav-link" target="_blank" href="{link :Frontend:Blog:detail, url => $record->locale()->url, lang => $presenter->locale()}" style="color: #900;">
             Náhled položky
         </a>
       </li>
