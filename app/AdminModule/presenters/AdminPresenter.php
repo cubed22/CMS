@@ -398,6 +398,7 @@ class AdminPresenter extends Presenter
         $files = new \WebLoader\FileCollection($wwwDir);
 
         $files->addFiles(array('main.css'));
+        $files->addFiles(array('datagrid.css'));
 
         $compiler = \WebLoader\Compiler::createCssCompiler($files, $contentTmpDir);
 

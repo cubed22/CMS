@@ -110,13 +110,13 @@ class BaseModel
         $data = $this->getDatabase()->table(static::$tableMain);
 
         if ($where)
-        $data->where($where);
+            $data->where($where);
 
         if ($order)
-        $data->order($order);
+            $data->order($order);
 
         if ($limit)
-        $data->limit($limit);
+            $data->limit($limit);
 
         foreach ($data as $d) {
             $result[] = new static::$recordClass($d);

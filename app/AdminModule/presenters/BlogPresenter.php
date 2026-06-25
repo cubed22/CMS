@@ -2,9 +2,11 @@
 namespace App\AdminModule\Presenters;
 
 use Nette\Application\UI\Form;
-use Nette\Application\UI\Multiplier;
 use App\Model;
+use App\Components\AdminGrid;
 use Nette\Utils\Image;
+use Ublaboo\DataGrid\Column\Action\Confirmation\StringConfirmation;
+use Ublaboo\DataGrid\DataGrid;
 
 /**
  * Presenter for managing blog items in the admin panel.
@@ -440,7 +442,7 @@ final class BlogPresenter extends AdminPresenter
      */
     public function handleToggleActive($id)
     {
-        $record = $this->getRecord();
+        $record = $this->blog->find($id);
         if (! $record) 
             $this->error("Položka nenalezena.");
 
@@ -450,6 +452,69 @@ final class BlogPresenter extends AdminPresenter
 
         $this->redrawControl('messageSnippet');
         $this->redrawControl('itemsSnippet');
+    }
+
+    public function createComponentSimpleGrid(string $name): AdminGrid
+    {
+        $grid = new AdminGrid($this, $name);
+
+        $data = $this->blog->queryAll($this->locale(), null, "time DESC");
+
+        $grid->setDataSource($data);
+
+        $grid->addColumnText('name', 'Název', ':blog_lang.name')
+            ->setRenderer(function ($row) {
+                $record = $this->blog->find($row->id, $this->locale());
+                return $record->locale()->name;
+            })
+            ->setSortable()
+            ->setFilterText();
+
+        $grid->addColumnDateTime('time', 'Datum')
+            ->setFormat('j.n.Y')
+            ->setAlign('center')
+            ->setSortable()
+            ->setFilterDate();
+
+        $grid->addColumnText('categories', 'Kategorie')
+            ->setRenderer(function ($row) {
+                $categories = [];
+                foreach ($row->related('blog_to_categories') as $relation) {
+                    $category = $relation->ref('category_id');
+                    if ($category) {
+                        $categories[] = $category->name;
+                    }
+                }
+                return implode(', ', $categories);
+            });
+
+        $grid->addColumnText('active', 'Aktivní')
+            ->setRenderer(function ($row) {
+                $record = $this->blog->find($row->id, $this->locale());
+                return $record->data()->active ? 'Ano' : 'Ne';
+            })
+            ->setSortable()
+            ->setAlign('center')
+            ->setFilterSelect([1 => 'Ano', 0 => 'Ne']);
+
+
+        $grid->addAction('toggleActive', '', 'toggleActive!', ['id' => 'id'])
+            ->setIcon('power-off')
+            ->setClass('btn btn-light btn-sm ajax')
+            ->setTitle('Aktivní/Neaktivní');
+
+        $grid->addAction('edit', '', 'Blog:detail')
+            ->setIcon('edit')
+            ->setClass('btn btn-primary btn-sm')
+            ->setTitle('Upravit');
+
+        $grid->addAction('remove', '', 'remove!', ['id' => 'id'])
+            ->setIcon('trash')
+            ->setClass('btn btn-danger btn-sm')
+            ->setTitle('Smazat')
+            ->setConfirmation(new StringConfirmation('Opravdu odebrat článek?'));
+
+        return $grid;
     }
 }
 

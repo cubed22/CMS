@@ -20,7 +20,9 @@
   <link rel="stylesheet" href="{$basePath}/www/admin/css/select2.min.css">
   <link rel="stylesheet" href="{$basePath}/www/admin/css/uikit.css">
   <link rel="stylesheet" href="{$basePath}/www/frontend/css/leaflet.css">
-  
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css">
+
   {control adminCss}
 
   <script src="{$basePath}/www/frontend/js/uikit.min.js"></script>
@@ -87,6 +89,14 @@
     <script>
         $(function () {
           $.nette.init();
+        });
+        $(document).on('click', '[data-datagrid-confirm], [data-confirm]', function (e) {
+            var message = $(this).data('datagrid-confirm') || $(this).data('confirm');
+            if (message && !confirm(message)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
         });
     </script>
 	{/block}

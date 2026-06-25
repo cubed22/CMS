@@ -81,19 +81,49 @@ class LocalizedModel extends BaseModel
         $data = $this->getDatabase()->table(static::$tableMain);
 
         if ($where)
-        $data->where($where);
+            $data->where($where);
 
         if ($order)
-        $data->order($order);
+            $data->order($order);
 
         if ($limit)
-        $data->limit($limit);
+            $data->limit($limit);
 
         foreach ($data as $d) {
             $result[] = new static::$recordClass($d, $locale);
         } 
 
         return $result;
+    }
+
+
+    /**
+     * Query all records with optional filtering, ordering, and limiting.
+     *
+     * @param string|null $locale
+     * @param string|null $where
+     * @param string|null $order
+     * @param int|null $limit
+     * @return Nette\Database\Table\Selection
+     */
+    public function queryAll($locale = NULL, $where = NULL, $order = NULL, $limit = NULL)
+    {
+        $selection = $this->getDatabase()->table(static::$tableMain);
+
+        if ($locale) {
+            $selection->where([":blog_lang.lang_id.shortcut" => $locale]);
+        }
+
+        if ($where)
+            $selection->where($where);
+
+        if ($order)
+            $selection->order($order);
+
+        if ($limit)
+            $selection->limit($limit);
+
+        return $selection;
     }
 
 }

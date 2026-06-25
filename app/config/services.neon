@@ -10,6 +10,7 @@ services:
 	- App\Router\RouterFactory::createRouter
 
 	- App\FrontendModule\Translator\FrontendTranslator
+	- App\AdminModule\Translator\AdminTranslator
 
 	- App\Model\Blog
 	- App\Model\BlogCategories

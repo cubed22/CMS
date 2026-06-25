@@ -1,0 +1,23 @@
+.datagrid .hidden {
+    display: none;
+}
+.datagrid .col-per-page {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.datagrid select[name="perPage"] {
+    width: 60px;
+    margin-right: 10px;
+}
+.datagrid .col-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.datagrid .reset-filter {
+    margin-right: 10px;
+}
+.datagrid .datagrid-column-header-additions{
+    display: inline-block;
+}
