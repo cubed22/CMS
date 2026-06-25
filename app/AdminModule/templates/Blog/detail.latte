@@ -82,12 +82,27 @@
       </div>
       <div class="card-body">
         {form editSeoForm}
-          {label title /}
-          {input title}
-          {label description /}
-          {input description}
-          {label keywords /}
-          {input keywords}
+          <div class="lang-wrapper">
+            <ul id="lang-nav-seo" class="uk-tab" uk-tab="connect: #lang-switcher-seo">
+              {foreach $presenter->getAllLanguages() as $lang}
+                <li class="{if $lang->data()->shortcut == $presenter->locale()}uk-active{/if}"><a>{$lang->data()->name}</a></li>
+              {/foreach}
+            </ul>
+
+            <ul id="lang-switcher-seo" class="uk-switcher">
+              {foreach $presenter->getAllLanguages() as $lang}
+                <li>
+                  {var $shortCut = $lang->data()->shortcut}
+                  {label $shortCut . "_title" /}
+                  {input $shortCut . "_title"}
+                  {label $shortCut . "_keywords" /}
+                  {input $shortCut . "_keywords"}
+                  {label $shortCut . "_description" /}
+                  {input $shortCut . "_description"}
+                </li>
+              {/foreach}
+            </ul>
+          </div>
           
           {input submit}
         {/form}

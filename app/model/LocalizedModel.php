@@ -180,8 +180,6 @@ class LocalizedRecord extends BaseRecord
 	public function update($data, $locals = [])
     {
         unset($data['id']);
-        bdump($data);
-        bdump($locals);
         $this->data()->update($data);
         foreach ($locals as $locale => $values) {
             $this->locale($locale)->update($values);

@@ -81,7 +81,7 @@ final class BlogPresenter extends AdminPresenter
             $this->error("Článek nenalezen.");
 
         $this->template->record = $record;
-        $this->template->headerName = $record->data()->name;
+        $this->template->headerName = $record->locale()->name;
 
         $this->template->imageItems = $record->images();
     }
@@ -283,9 +283,13 @@ final class BlogPresenter extends AdminPresenter
         $record = $this->getRecord();
 
         $form->addHidden("id");
-        $form->addText("title", "Titulek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->data()->title);
-        $form->addText("description", "Popisek")->setHtmlAttribute("class", "uk-input ")->setDefaultValue($record->data()->description);
-        $form->addText("keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input ")->setDefaultValue($record->data()->keywords);
+
+        foreach ($this->getAllLanguages() as $lang) {
+            $shortCut = $lang->data()->shortcut;
+            $form->addText($shortCut . "_title", "Titulek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->title);
+            $form->addTextarea($shortCut . "_description", "Popisek")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->description)->setHtmlAttribute('rows', 40);
+            $form->addText($shortCut . "_keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->keywords);
+        }
         $form->addSubmit("submit", "Uložit")->setHtmlAttribute("class", "btn btn-primary uk-margin-top");
 
         $form->onSuccess[] = [$this, 'editSeoFormSucceeded'];
@@ -296,10 +300,10 @@ final class BlogPresenter extends AdminPresenter
      * Handle successful edit SEO form submission.
      *
      * @param Form $form
-     * @param array $values
+     * @param \Nette\Utils\ArrayHash $values
      * @return void
      */
-    public function editSeoFormSucceeded(Form $form, $values)
+    public function editSeoFormSucceeded(Form $form, \Nette\Utils\ArrayHash $values)
     {
         $time = time();
 
@@ -307,10 +311,12 @@ final class BlogPresenter extends AdminPresenter
         if (! $record) 
             $this->error("Článek nenalezen.");
 
+        $locals = $this->parseLocalizedValues($values);
+
         $values["time_modify"] = $time;
         $values["modify_user_id"] = $this->getAdminUser()->data()->id;
 
-        $record->update($values);
+        $record->update($values, $locals);
         $this->flashMessage("SEO nastavení bylo uloženo.");
 
         $this->redirect("Blog:detail", ["id" => $record->data()->id, 'tab' => 'seo']);
@@ -399,10 +405,10 @@ final class BlogPresenter extends AdminPresenter
      * Handle successful insert image form submission.
      *
      * @param Form $form
-     * @param array $values
+     * @param \Nette\Utils\ArrayHash $values
      * @return void
      */
-    public function insertImageFormSucceeded(Form $form, $values)
+    public function insertImageFormSucceeded(Form $form, \Nette\Utils\ArrayHash $values)
     {
         $record = $this->getRecord();
         if (! $record) 

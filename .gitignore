@@ -2,3 +2,5 @@ www/frontend/cache/*
 !www/frontend/cache/.gitkeep
 www/admin/cache/*
 !www/admin/cache/.gitkeep
+vendor/*
+!vendor/.gitkeep
