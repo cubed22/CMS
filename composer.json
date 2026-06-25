@@ -21,7 +21,9 @@
 		"latte/latte": "^2.11 || ^3.0",
 		"tracy/tracy": "^2.8",
 		"phpmailer/phpmailer": "^6.9",
-		"comgate/sdk": "^1.0"
+		"comgate/sdk": "^1.0",
+		"ublaboo/datagrid": "*",
+		"janmarek/webloader": "^2.0"
 	},
 	"require-dev": {
 		"nette/tester": "^2.3",

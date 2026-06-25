@@ -9,132 +9,139 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
     public static $files = array (
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
+        'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
-        '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
-        'db356362850385d08a5381de2638b5fd' => __DIR__ . '/..' . '/mpdf/mpdf/src/functions.php',
         'd507e002f7fce7f0c6dbf1f22edcb902' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/functions.php',
     );
 
     public static $prefixLengthsPsr4 = array (
-        's' => 
+        'U' =>
         array (
-            'setasign\\Fpdi\\' => 14,
+            'Ublaboo\\DataGrid\\' => 17,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Thanks\\' => 15,
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
+            'Symfony\\Polyfill\\Intl\\Grapheme\\' => 31,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Component\\String\\' => 25,
+            'Symfony\\Component\\PropertyInfo\\' => 31,
+            'Symfony\\Component\\PropertyAccess\\' => 33,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
-        'M' => 
-        array (
-            'Mpdf\\PsrLogAwareTrait\\' => 22,
-            'Mpdf\\PsrHttpMessageShim\\' => 24,
-            'Mpdf\\' => 5,
-        ),
-        'G' => 
+        'G' =>
         array (
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
         ),
-        'D' => 
+        'C' =>
         array (
-            'DeepCopy\\' => 9,
-        ),
-        'C' => 
-        array (
-            'Contributte\\ReCaptcha\\' => 22,
-            'Contributte\\DI\\' => 15,
+            'Contributte\\Application\\' => 24,
             'Comgate\\SDK\\' => 12,
         ),
-        'A' => 
+        'A' =>
         array (
             'App\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'setasign\\Fpdi\\' => 
+        'Ublaboo\\DataGrid\\' =>
         array (
-            0 => __DIR__ . '/..' . '/setasign/fpdi/src',
+            0 => __DIR__ . '/..' . '/ublaboo/datagrid/src',
         ),
-        'Symfony\\Thanks\\' => 
+        'Symfony\\Thanks\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/thanks/src',
         ),
-        'Psr\\Log\\' => 
+        'Symfony\\Polyfill\\Mbstring\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Polyfill\\Intl\\Normalizer\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
+        ),
+        'Symfony\\Polyfill\\Intl\\Grapheme\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Symfony\\Component\\String\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/string',
+        ),
+        'Symfony\\Component\\PropertyInfo\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/property-info',
+        ),
+        'Symfony\\Component\\PropertyAccess\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/property-access',
+        ),
+        'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-factory/src',
             1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Http\\Client\\' => 
+        'Psr\\Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
-        'PHPMailer\\PHPMailer\\' => 
+        'PHPMailer\\PHPMailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
-        'Mpdf\\PsrLogAwareTrait\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/mpdf/psr-log-aware-trait/src',
-        ),
-        'Mpdf\\PsrHttpMessageShim\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/mpdf/psr-http-message-shim/src',
-        ),
-        'Mpdf\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/mpdf/mpdf/src',
-        ),
-        'GuzzleHttp\\Psr7\\' => 
+        'GuzzleHttp\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
-        'GuzzleHttp\\Promise\\' => 
+        'GuzzleHttp\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
         ),
-        'GuzzleHttp\\' => 
+        'GuzzleHttp\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'DeepCopy\\' => 
+        'Contributte\\Application\\' =>
         array (
-            0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
+            0 => __DIR__ . '/..' . '/contributte/application/src',
         ),
-        'Contributte\\ReCaptcha\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/contributte/recaptcha/src',
-        ),
-        'Contributte\\DI\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/contributte/di/src',
-        ),
-        'Comgate\\SDK\\' => 
+        'Comgate\\SDK\\' =>
         array (
             0 => __DIR__ . '/..' . '/comgate/sdk/src',
         ),
-        'App\\' => 
+        'App\\' =>
         array (
             0 => __DIR__ . '/../..' . '/app',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'W' => 
+        'W' =>
         array (
-            'WebLoader' => 
+            'WebLoader' =>
             array (
                 0 => __DIR__ . '/..' . '/janmarek/webloader',
             ),
@@ -143,71 +150,157 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'CssAtCharsetParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtCharsetToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtFontFaceDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtFontFaceEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtFontFaceParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtFontFaceStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtImportParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtImportToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesRulesetDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesRulesetEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesRulesetStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtKeyframesStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtMediaEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtMediaParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtMediaStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtPageDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtPageEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtPageParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtPageStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtVariablesDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtVariablesEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtVariablesParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssAtVariablesStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssCommentParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssCommentToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssCompressColorValuesMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssCompressExpressionValuesMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssCompressUnitValuesMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertFontWeightMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertHslColorsMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertLevel3AtKeyframesMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertLevel3PropertiesMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertNamedColorsMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssConvertRgbColorsMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssError' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssExpressionParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssImportImportsMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssMin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssMinifier' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssNullToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssOtbsFormatter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssParser' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRemoveCommentsMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRemoveEmptyAtBlocksMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRemoveEmptyRulesetsMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRemoveLastDelarationSemiColonMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRulesetDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRulesetEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRulesetParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssRulesetStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssSortRulesetPropertiesMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssStringParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssUrlParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssVariablesMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssVariablesMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'CssWhitesmithsFormatter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
         'Latte\\Attributes\\TemplateFilter' => __DIR__ . '/..' . '/latte/latte/src/Latte/attributes.php',
         'Latte\\Attributes\\TemplateFunction' => __DIR__ . '/..' . '/latte/latte/src/Latte/attributes.php',
         'Latte\\Bridges\\Tracy\\BlueScreenPanel' => __DIR__ . '/..' . '/latte/latte/src/Bridges/Tracy/BlueScreenPanel.php',
         'Latte\\Bridges\\Tracy\\LattePanel' => __DIR__ . '/..' . '/latte/latte/src/Bridges/Tracy/LattePanel.php',
+        'Latte\\Bridges\\Tracy\\TracyExtension' => __DIR__ . '/..' . '/latte/latte/src/Bridges/Tracy/TracyExtension.php',
         'Latte\\CompileException' => __DIR__ . '/..' . '/latte/latte/src/Latte/exceptions.php',
         'Latte\\Compiler' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Compiler.php',
+        'Latte\\Compiler\\Block' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Block.php',
+        'Latte\\Compiler\\Escaper' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Escaper.php',
+        'Latte\\Compiler\\ExpressionBuilder' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/ExpressionBuilder.php',
+        'Latte\\Compiler\\Node' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Node.php',
+        'Latte\\Compiler\\NodeHelpers' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/NodeHelpers.php',
+        'Latte\\Compiler\\NodeTraverser' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/NodeTraverser.php',
+        'Latte\\Compiler\\Nodes\\AreaNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/AreaNode.php',
+        'Latte\\Compiler\\Nodes\\AuxiliaryNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/AuxiliaryNode.php',
+        'Latte\\Compiler\\Nodes\\FragmentNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/FragmentNode.php',
+        'Latte\\Compiler\\Nodes\\Html\\AttributeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Html/AttributeNode.php',
+        'Latte\\Compiler\\Nodes\\Html\\BogusTagNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Html/BogusTagNode.php',
+        'Latte\\Compiler\\Nodes\\Html\\CommentNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Html/CommentNode.php',
+        'Latte\\Compiler\\Nodes\\Html\\ElementNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Html/ElementNode.php',
+        'Latte\\Compiler\\Nodes\\NopNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/NopNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ArgumentNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ArgumentNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ArrayItemNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ArrayItemNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ClosureUseNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ClosureUseNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ComplexTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ComplexTypeNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ExpressionNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ExpressionNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ArrayAccessNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ArrayAccessNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ArrayItemNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ArrayItemNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ArrayNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ArrayNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\AssignNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/AssignNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\AssignOpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/AssignOpNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\AuxiliaryNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/AuxiliaryNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\BinaryOpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/BinaryOpNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\CastNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/CastNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ClassConstantFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ClassConstantFetchNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\CloneNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/CloneNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ClosureNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ClosureNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ConstantFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ConstantFetchNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\EmptyNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/EmptyNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\ErrorSuppressNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/ErrorSuppressNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\FilterCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/FilterCallNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\FunctionCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/FunctionCallNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\FunctionCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/FunctionCallableNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\InNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/InNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\InstanceofNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/InstanceofNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\IssetNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/IssetNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\MatchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/MatchNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\MethodCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/MethodCallNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\MethodCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/MethodCallableNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\NewNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/NewNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\NotNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/NotNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\PostOpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/PostOpNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\PreOpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/PreOpNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\PropertyFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/PropertyFetchNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\StaticCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/StaticMethodCallNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\StaticCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/StaticMethodCallableNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\StaticMethodCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/StaticMethodCallNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\StaticMethodCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/StaticMethodCallableNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\StaticPropertyFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/StaticPropertyFetchNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\TemporaryNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/TemporaryNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\TernaryNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/TernaryNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\UnaryOpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/UnaryOpNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Expression\\VariableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Expression/VariableNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\FilterNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/FilterNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\IdentifierNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/IdentifierNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\InterpolatedStringPartNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/InterpolatedStringPartNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\IntersectionTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/IntersectionTypeNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ListItemNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ListItemNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ListNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ListNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\MatchArmNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/MatchArmNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ModifierNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ModifierNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\NameNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/NameNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\NullableTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/NullableTypeNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ParameterNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ParameterNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\ScalarNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/ScalarNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\BooleanNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/BooleanNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\FloatNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/FloatNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\IntegerNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/IntegerNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\InterpolatedStringNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/InterpolatedStringNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\NullNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/NullNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\Scalar\\StringNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/Scalar/StringNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\SuperiorTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/SuperiorTypeNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\UnionTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/UnionTypeNode.php',
+        'Latte\\Compiler\\Nodes\\Php\\VarLikeIdentifierNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/Php/VarLikeIdentifierNode.php',
+        'Latte\\Compiler\\Nodes\\PrintNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/PrintNode.php',
+        'Latte\\Compiler\\Nodes\\StatementNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/StatementNode.php',
+        'Latte\\Compiler\\Nodes\\TemplateNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/TemplateNode.php',
+        'Latte\\Compiler\\Nodes\\TextNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Nodes/TextNode.php',
+        'Latte\\Compiler\\Position' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Position.php',
+        'Latte\\Compiler\\PrintContext' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/PrintContext.php',
+        'Latte\\Compiler\\Tag' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/Tag.php',
+        'Latte\\Compiler\\TagLexer' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TagLexer.php',
+        'Latte\\Compiler\\TagParser' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TagParser.php',
+        'Latte\\Compiler\\TagParserData' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TagParserData.php',
+        'Latte\\Compiler\\TemplateGenerator' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TemplateGenerator.php',
+        'Latte\\Compiler\\TemplateLexer' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TemplateLexer.php',
+        'Latte\\Compiler\\TemplateParser' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TemplateParser.php',
+        'Latte\\Compiler\\TemplateParserHtml' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TemplateParserHtml.php',
+        'Latte\\Compiler\\TokenStream' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/TokenStream.php',
+        'Latte\\ContentType' => __DIR__ . '/..' . '/latte/latte/src/Latte/ContentType.php',
         'Latte\\Engine' => __DIR__ . '/..' . '/latte/latte/src/Latte/Engine.php',
+        'Latte\\Essential\\AuxiliaryIterator' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/AuxiliaryIterator.php',
+        'Latte\\Essential\\Blueprint' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Blueprint.php',
+        'Latte\\Essential\\CachingIterator' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/CachingIterator.php',
+        'Latte\\Essential\\CoreExtension' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/CoreExtension.php',
+        'Latte\\Essential\\Filters' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Filters.php',
+        'Latte\\Essential\\Nodes\\BlockNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/BlockNode.php',
+        'Latte\\Essential\\Nodes\\CaptureNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/CaptureNode.php',
+        'Latte\\Essential\\Nodes\\ContentTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ContentTypeNode.php',
+        'Latte\\Essential\\Nodes\\DebugbreakNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/DebugbreakNode.php',
+        'Latte\\Essential\\Nodes\\DefineNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/DefineNode.php',
+        'Latte\\Essential\\Nodes\\DoNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/DoNode.php',
+        'Latte\\Essential\\Nodes\\DumpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/DumpNode.php',
+        'Latte\\Essential\\Nodes\\EmbedNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/EmbedNode.php',
+        'Latte\\Essential\\Nodes\\ExtendsNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ExtendsNode.php',
+        'Latte\\Essential\\Nodes\\FirstLastSepNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/FirstLastSepNode.php',
+        'Latte\\Essential\\Nodes\\ForNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ForNode.php',
+        'Latte\\Essential\\Nodes\\ForeachNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ForeachNode.php',
+        'Latte\\Essential\\Nodes\\IfChangedNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IfChangedNode.php',
+        'Latte\\Essential\\Nodes\\IfContentNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IfContentNode.php',
+        'Latte\\Essential\\Nodes\\IfNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IfNode.php',
+        'Latte\\Essential\\Nodes\\ImportNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ImportNode.php',
+        'Latte\\Essential\\Nodes\\IncludeBlockNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IncludeBlockNode.php',
+        'Latte\\Essential\\Nodes\\IncludeFileNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IncludeFileNode.php',
+        'Latte\\Essential\\Nodes\\IterateWhileNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/IterateWhileNode.php',
+        'Latte\\Essential\\Nodes\\JumpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/JumpNode.php',
+        'Latte\\Essential\\Nodes\\NAttrNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/NAttrNode.php',
+        'Latte\\Essential\\Nodes\\NClassNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/NClassNode.php',
+        'Latte\\Essential\\Nodes\\NElseNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/NElseNode.php',
+        'Latte\\Essential\\Nodes\\NTagNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/NTagNode.php',
+        'Latte\\Essential\\Nodes\\ParametersNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/ParametersNode.php',
+        'Latte\\Essential\\Nodes\\RawPhpNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/RawPhpNode.php',
+        'Latte\\Essential\\Nodes\\RollbackNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/RollbackNode.php',
+        'Latte\\Essential\\Nodes\\SpacelessNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/SpacelessNode.php',
+        'Latte\\Essential\\Nodes\\SwitchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/SwitchNode.php',
+        'Latte\\Essential\\Nodes\\TemplatePrintNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/TemplatePrintNode.php',
+        'Latte\\Essential\\Nodes\\TemplateTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/TemplateTypeNode.php',
+        'Latte\\Essential\\Nodes\\TraceNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/TraceNode.php',
+        'Latte\\Essential\\Nodes\\TranslateNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/TranslateNode.php',
+        'Latte\\Essential\\Nodes\\TryNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/TryNode.php',
+        'Latte\\Essential\\Nodes\\VarNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/VarNode.php',
+        'Latte\\Essential\\Nodes\\VarPrintNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/VarPrintNode.php',
+        'Latte\\Essential\\Nodes\\VarTypeNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/VarTypeNode.php',
+        'Latte\\Essential\\Nodes\\WhileNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Nodes/WhileNode.php',
+        'Latte\\Essential\\Passes' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Passes.php',
+        'Latte\\Essential\\RawPhpExtension' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/RawPhpExtension.php',
+        'Latte\\Essential\\RollbackException' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/RollbackException.php',
+        'Latte\\Essential\\Tracer' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/Tracer.php',
+        'Latte\\Essential\\TranslatorExtension' => __DIR__ . '/..' . '/latte/latte/src/Latte/Essential/TranslatorExtension.php',
+        'Latte\\Extension' => __DIR__ . '/..' . '/latte/latte/src/Latte/Extension.php',
+        'Latte\\Feature' => __DIR__ . '/..' . '/latte/latte/src/Latte/Feature.php',
         'Latte\\Helpers' => __DIR__ . '/..' . '/latte/latte/src/Latte/Helpers.php',
         'Latte\\HtmlNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Compiler/HtmlNode.php',
         'Latte\\ILoader' => __DIR__ . '/..' . '/latte/latte/src/compatibility.php',
@@ -229,12 +322,16 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Latte\\RuntimeException' => __DIR__ . '/..' . '/latte/latte/src/Latte/exceptions.php',
         'Latte\\Runtime\\Block' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Block.php',
         'Latte\\Runtime\\Blueprint' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Blueprint.php',
+        'Latte\\Runtime\\Cache' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Cache.php',
         'Latte\\Runtime\\CachingIterator' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/CachingIterator.php',
         'Latte\\Runtime\\Defaults' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Defaults.php',
         'Latte\\Runtime\\FilterExecutor' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/FilterExecutor.php',
         'Latte\\Runtime\\FilterInfo' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/FilterInfo.php',
         'Latte\\Runtime\\Filters' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Filters.php',
+        'Latte\\Runtime\\FunctionExecutor' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/FunctionExecutor.php',
+        'Latte\\Runtime\\Helpers' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Helpers.php',
         'Latte\\Runtime\\Html' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Html.php',
+        'Latte\\Runtime\\HtmlHelpers' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/HtmlHelpers.php',
         'Latte\\Runtime\\HtmlStringable' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/HtmlStringable.php',
         'Latte\\Runtime\\IHtmlString' => __DIR__ . '/..' . '/latte/latte/src/compatibility.php',
         'Latte\\Runtime\\ISnippetBridge' => __DIR__ . '/..' . '/latte/latte/src/compatibility.php',
@@ -243,6 +340,18 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Latte\\Runtime\\SnippetDriver' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/SnippetDriver.php',
         'Latte\\Runtime\\Template' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Template.php',
         'Latte\\Runtime\\Tracer' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/Tracer.php',
+        'Latte\\Runtime\\XmlHelpers' => __DIR__ . '/..' . '/latte/latte/src/Latte/Runtime/XmlHelpers.php',
+        'Latte\\Sandbox\\Nodes\\FunctionCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/FunctionCallNode.php',
+        'Latte\\Sandbox\\Nodes\\FunctionCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/FunctionCallableNode.php',
+        'Latte\\Sandbox\\Nodes\\MethodCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/MethodCallNode.php',
+        'Latte\\Sandbox\\Nodes\\MethodCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/MethodCallableNode.php',
+        'Latte\\Sandbox\\Nodes\\PropertyFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/PropertyFetchNode.php',
+        'Latte\\Sandbox\\Nodes\\SandboxNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/SandboxNode.php',
+        'Latte\\Sandbox\\Nodes\\StaticMethodCallNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/StaticMethodCallNode.php',
+        'Latte\\Sandbox\\Nodes\\StaticMethodCallableNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/StaticMethodCallableNode.php',
+        'Latte\\Sandbox\\Nodes\\StaticPropertyFetchNode' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/Nodes/StaticPropertyFetchNode.php',
+        'Latte\\Sandbox\\RuntimeChecker' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/RuntimeChecker.php',
+        'Latte\\Sandbox\\SandboxExtension' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/SandboxExtension.php',
         'Latte\\Sandbox\\SecurityPolicy' => __DIR__ . '/..' . '/latte/latte/src/Latte/Sandbox/SecurityPolicy.php',
         'Latte\\SecurityViolationException' => __DIR__ . '/..' . '/latte/latte/src/Latte/exceptions.php',
         'Latte\\Strict' => __DIR__ . '/..' . '/latte/latte/src/Latte/Strict.php',
@@ -333,6 +442,7 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Nette\\Bridges\\CacheLatte\\CacheExtension' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/CacheExtension.php',
         'Nette\\Bridges\\CacheLatte\\CacheMacro' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/CacheMacro.php',
         'Nette\\Bridges\\CacheLatte\\Nodes\\CacheNode' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/Nodes/CacheNode.php',
+        'Nette\\Bridges\\CacheLatte\\Runtime' => __DIR__ . '/..' . '/nette/caching/src/Bridges/CacheLatte/Runtime.php',
         'Nette\\Bridges\\DITracy\\ContainerPanel' => __DIR__ . '/..' . '/nette/di/src/Bridges/DITracy/ContainerPanel.php',
         'Nette\\Bridges\\DatabaseDI\\DatabaseExtension' => __DIR__ . '/..' . '/nette/database/src/Bridges/DatabaseDI/DatabaseExtension.php',
         'Nette\\Bridges\\DatabaseTracy\\ConnectionPanel' => __DIR__ . '/..' . '/nette/database/src/Bridges/DatabaseTracy/ConnectionPanel.php',
@@ -557,15 +667,19 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Nette\\NotSupportedException' => __DIR__ . '/..' . '/nette/utils/src/exceptions.php',
         'Nette\\OutOfRangeException' => __DIR__ . '/..' . '/nette/utils/src/exceptions.php',
         'Nette\\PhpGenerator\\Attribute' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Attribute.php',
+        'Nette\\PhpGenerator\\ClassLike' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/ClassLike.php',
+        'Nette\\PhpGenerator\\ClassManipulator' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/ClassManipulator.php',
         'Nette\\PhpGenerator\\ClassType' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/ClassType.php',
         'Nette\\PhpGenerator\\Closure' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Closure.php',
         'Nette\\PhpGenerator\\Constant' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Constant.php',
         'Nette\\PhpGenerator\\Dumper' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Dumper.php',
         'Nette\\PhpGenerator\\EnumCase' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/EnumCase.php',
+        'Nette\\PhpGenerator\\EnumType' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/EnumType.php',
         'Nette\\PhpGenerator\\Extractor' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Extractor.php',
         'Nette\\PhpGenerator\\Factory' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Factory.php',
         'Nette\\PhpGenerator\\GlobalFunction' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/GlobalFunction.php',
         'Nette\\PhpGenerator\\Helpers' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Helpers.php',
+        'Nette\\PhpGenerator\\InterfaceType' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/InterfaceType.php',
         'Nette\\PhpGenerator\\Literal' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Literal.php',
         'Nette\\PhpGenerator\\Method' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Method.php',
         'Nette\\PhpGenerator\\Parameter' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Parameter.php',
@@ -575,14 +689,24 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Nette\\PhpGenerator\\Printer' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Printer.php',
         'Nette\\PhpGenerator\\PromotedParameter' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/PromotedParameter.php',
         'Nette\\PhpGenerator\\Property' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Property.php',
+        'Nette\\PhpGenerator\\PropertyAccessMode' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/PropertyAccessMode.php',
+        'Nette\\PhpGenerator\\PropertyHook' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/PropertyHook.php',
+        'Nette\\PhpGenerator\\PropertyHookType' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/PropertyHookType.php',
         'Nette\\PhpGenerator\\PsrPrinter' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/PsrPrinter.php',
+        'Nette\\PhpGenerator\\TraitType' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/TraitType.php',
         'Nette\\PhpGenerator\\TraitUse' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/TraitUse.php',
         'Nette\\PhpGenerator\\Traits\\AttributeAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/AttributeAware.php',
         'Nette\\PhpGenerator\\Traits\\CommentAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/CommentAware.php',
+        'Nette\\PhpGenerator\\Traits\\ConstantsAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/ConstantsAware.php',
         'Nette\\PhpGenerator\\Traits\\FunctionLike' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/FunctionLike.php',
+        'Nette\\PhpGenerator\\Traits\\MethodsAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/MethodsAware.php',
         'Nette\\PhpGenerator\\Traits\\NameAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/NameAware.php',
+        'Nette\\PhpGenerator\\Traits\\PropertiesAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/PropertiesAware.php',
+        'Nette\\PhpGenerator\\Traits\\PropertyLike' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/PropertyLike.php',
+        'Nette\\PhpGenerator\\Traits\\TraitsAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/TraitsAware.php',
         'Nette\\PhpGenerator\\Traits\\VisibilityAware' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Traits/VisibilityAware.php',
         'Nette\\PhpGenerator\\Type' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Type.php',
+        'Nette\\PhpGenerator\\Visibility' => __DIR__ . '/..' . '/nette/php-generator/src/PhpGenerator/Visibility.php',
         'Nette\\Routing\\Route' => __DIR__ . '/..' . '/nette/routing/src/Routing/Route.php',
         'Nette\\Routing\\RouteList' => __DIR__ . '/..' . '/nette/routing/src/Routing/RouteList.php',
         'Nette\\Routing\\Router' => __DIR__ . '/..' . '/nette/routing/src/Routing/Router.php',
@@ -647,6 +771,8 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Nette\\Utils\\Type' => __DIR__ . '/..' . '/nette/utils/src/Utils/Type.php',
         'Nette\\Utils\\UnknownImageFileException' => __DIR__ . '/..' . '/nette/utils/src/Utils/exceptions.php',
         'Nette\\Utils\\Validators' => __DIR__ . '/..' . '/nette/utils/src/Utils/Validators.php',
+        'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
+        'Tester\\Ansi' => __DIR__ . '/..' . '/nette/tester/src/Framework/Ansi.php',
         'Tester\\Assert' => __DIR__ . '/..' . '/nette/tester/src/Framework/Assert.php',
         'Tester\\AssertException' => __DIR__ . '/..' . '/nette/tester/src/Framework/AssertException.php',
         'Tester\\CodeCoverage\\Collector' => __DIR__ . '/..' . '/nette/tester/src/CodeCoverage/Collector.php',
@@ -662,6 +788,7 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Tester\\FileMock' => __DIR__ . '/..' . '/nette/tester/src/Framework/FileMock.php',
         'Tester\\FileMutator' => __DIR__ . '/..' . '/nette/tester/src/Framework/FileMutator.php',
         'Tester\\Helpers' => __DIR__ . '/..' . '/nette/tester/src/Framework/Helpers.php',
+        'Tester\\HttpAssert' => __DIR__ . '/..' . '/nette/tester/src/Framework/HttpAssert.php',
         'Tester\\Runner\\CliTester' => __DIR__ . '/..' . '/nette/tester/src/Runner/CliTester.php',
         'Tester\\Runner\\CommandLine' => __DIR__ . '/..' . '/nette/tester/src/Runner/CommandLine.php',
         'Tester\\Runner\\InterruptException' => __DIR__ . '/..' . '/nette/tester/src/Runner/exceptions.php',
@@ -685,6 +812,7 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Tracy\\Bridges\\Nette\\TracyExtension' => __DIR__ . '/..' . '/tracy/tracy/src/Bridges/Nette/TracyExtension.php',
         'Tracy\\Bridges\\Psr\\PsrToTracyLoggerAdapter' => __DIR__ . '/..' . '/tracy/tracy/src/Bridges/Psr/PsrToTracyLoggerAdapter.php',
         'Tracy\\Bridges\\Psr\\TracyToPsrLoggerAdapter' => __DIR__ . '/..' . '/tracy/tracy/src/Bridges/Psr/TracyToPsrLoggerAdapter.php',
+        'Tracy\\CodeHighlighter' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/BlueScreen/CodeHighlighter.php',
         'Tracy\\Debugger' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Debugger/Debugger.php',
         'Tracy\\DefaultBarPanel' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Bar/DefaultBarPanel.php',
         'Tracy\\DeferredContent' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Debugger/DeferredContent.php',
@@ -704,16 +832,6 @@ class ComposerStaticInitbaffb8a8445739b6af190f33738c6458
         'Tracy\\OutputDebugger' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/OutputDebugger/OutputDebugger.php',
         'Tracy\\ProductionStrategy' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Debugger/ProductionStrategy.php',
         'Tracy\\SessionStorage' => __DIR__ . '/..' . '/tracy/tracy/src/Tracy/Session/SessionStorage.php',
-        'aCssAtBlockEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssAtBlockStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssDeclarationToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssFormatter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssMinifierFilter' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssMinifierPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssParserPlugin' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssRulesetEndToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssRulesetStartToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
-        'aCssToken' => __DIR__ . '/..' . '/natxet/cssmin/src/CssMin.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
