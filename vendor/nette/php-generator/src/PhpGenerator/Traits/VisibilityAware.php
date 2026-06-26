@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace Nette\PhpGenerator\Traits;
 
-use Nette;
-use Nette\PhpGenerator\ClassType;
+use Nette\PhpGenerator\Visibility;
 
 
 /**
@@ -18,21 +17,14 @@ use Nette\PhpGenerator\ClassType;
  */
 trait VisibilityAware
 {
-	/** @var string|null  public|protected|private */
-	private $visibility;
+	/** public|protected|private */
+	private ?string $visibility = null;
 
 
-	/**
-	 * @param  string|null  $val  public|protected|private
-	 * @return static
-	 */
-	public function setVisibility(?string $val): self
+	/** @param  'public'|'protected'|'private'|null  $value */
+	public function setVisibility(?string $value): static
 	{
-		if (!in_array($val, [ClassType::VisibilityPublic, ClassType::VisibilityProtected, ClassType::VisibilityPrivate, null], true)) {
-			throw new Nette\InvalidArgumentException('Argument must be public|protected|private.');
-		}
-
-		$this->visibility = $val;
+		$this->visibility = $value === null ? $value : Visibility::from($value);
 		return $this;
 	}
 
@@ -43,44 +35,41 @@ trait VisibilityAware
 	}
 
 
-	/** @return static */
-	public function setPublic(): self
+	public function setPublic(): static
 	{
-		$this->visibility = ClassType::VisibilityPublic;
+		$this->visibility = Visibility::Public;
 		return $this;
 	}
 
 
 	public function isPublic(): bool
 	{
-		return $this->visibility === ClassType::VisibilityPublic || $this->visibility === null;
+		return $this->visibility === Visibility::Public || $this->visibility === null;
 	}
 
 
-	/** @return static */
-	public function setProtected(): self
+	public function setProtected(): static
 	{
-		$this->visibility = ClassType::VisibilityProtected;
+		$this->visibility = Visibility::Protected;
 		return $this;
 	}
 
 
 	public function isProtected(): bool
 	{
-		return $this->visibility === ClassType::VisibilityProtected;
+		return $this->visibility === Visibility::Protected;
 	}
 
 
-	/** @return static */
-	public function setPrivate(): self
+	public function setPrivate(): static
 	{
-		$this->visibility = ClassType::VisibilityPrivate;
+		$this->visibility = Visibility::Private;
 		return $this;
 	}
 
 
 	public function isPrivate(): bool
 	{
-		return $this->visibility === ClassType::VisibilityPrivate;
+		return $this->visibility === Visibility::Private;
 	}
 }

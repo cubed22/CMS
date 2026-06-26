@@ -9,9 +9,9 @@ class PaymentRefundRequest implements IRequest
 {
 
 	/**
-	 * @var Refund 
+	 * @var Refund
 	 */
-	private Refund $refund;
+	private $refund;
 
 	public function __construct(Refund $refund)
 	{
@@ -23,18 +23,17 @@ class PaymentRefundRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'refund';
+		return 'refund.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, string|int>
 	 */
 	public function toArray(): array
 	{
 		return [
 			'transId' => $this->getRefund()->getTransId(),
 			'amount' => $this->getRefund()->getAmount()->get(),
-			'curr' => $this->getRefund()->getCurrency(),
 			'test' => $this->getRefund()->isTest() ? 'true' : 'false',
 			'refId' => $this->getRefund()->getRefId(),
 		];

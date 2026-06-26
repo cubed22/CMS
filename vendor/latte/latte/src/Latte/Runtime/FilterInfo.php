@@ -1,15 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Latte (https://latte.nette.org)
  * Copyright (c) 2008 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Latte\Runtime;
 
 use Latte;
+use function in_array, strtoupper;
 
 
 /**
@@ -17,10 +16,7 @@ use Latte;
  */
 class FilterInfo
 {
-	use Latte\Strict;
-
-	/** @var string|null */
-	public $contentType;
+	public ?string $contentType = null;
 
 
 	public function __construct(?string $contentType = null)

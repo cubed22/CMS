@@ -1,45 +1,35 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner;
 
 use Tester\Helpers;
+use function array_map, count, explode, implode, in_array, str_contains;
 
 
 /**
- * PHP command-line executable.
+ * Wraps a PHP executable and its resolved version, extensions, and command-line options.
  */
 class PhpInterpreter
 {
-	/** @var string */
-	private $commandLine;
-
-	/** @var bool is CGI? */
-	private $cgi;
-
-	/** @var \stdClass  created by info.php */
-	private $info;
-
-	/** @var string */
-	private $error;
+	/** @var list<string> */
+	private array $commandLine;
+	private bool $cgi;
+	private \stdClass $info;
+	private string $error;
 
 
+	/** @param list<string>  $args */
 	public function __construct(string $path, array $args = [])
 	{
-		$this->commandLine = Helpers::escapeArg($path);
 		$proc = @proc_open( // @ is escalated to exception
-			$this->commandLine . ' --version',
+			[$path, '--version'],
 			[['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']],
 			$pipes,
-			null,
-			null,
-			['bypass_shell' => true]
 		);
 		if ($proc === false) {
 			throw new \Exception("Cannot run PHP interpreter $path. Use -p option.");
@@ -49,21 +39,18 @@ class PhpInterpreter
 		$output = stream_get_contents($pipes[1]);
 		proc_close($proc);
 
-		$args = ' ' . implode(' ', array_map([Helpers::class, 'escapeArg'], $args));
-		if (strpos($output, 'phpdbg') !== false) {
-			$args = ' -qrrb -S cli' . $args;
+		if (str_contains($output, 'phpdbg')) {
+			$args = ['-qrrb', '-S', 'cli', ...$args];
 		}
 
-		$this->commandLine .= rtrim($args);
+		$this->commandLine = [$path, ...$args];
 
 		$proc = proc_open(
-			$this->commandLine . ' -d register_argc_argv=on ' . Helpers::escapeArg(__DIR__ . '/info.php') . ' serialized',
+			[...$this->commandLine, '-d', 'register_argc_argv=on', __DIR__ . '/info.php', 'serialized'],
 			[['pipe', 'r'], ['pipe', 'w'], ['pipe', 'w']],
 			$pipes,
-			null,
-			null,
-			['bypass_shell' => true]
-		);
+		) ?: throw new \Exception("Unable to run $path.");
+
 		$output = stream_get_contents($pipes[1]);
 		$this->error = trim(stream_get_contents($pipes[2]));
 		if (proc_close($proc)) {
@@ -72,32 +59,50 @@ class PhpInterpreter
 
 		$parts = explode("\r\n\r\n", $output, 2);
 		$this->cgi = count($parts) === 2;
-		$this->info = @unserialize((string) strstr($parts[$this->cgi], 'O:8:"stdClass"'));
-		$this->error .= strstr($parts[$this->cgi], 'O:8:"stdClass"', true);
-		if (!$this->info) {
+		$output = $parts[(int) $this->cgi];
+		$pos = strpos($output, 'O:8:"stdClass"');
+		$info = $pos === false ? false : @unserialize(substr($output, $pos));
+		if (!$info) {
 			throw new \Exception("Unable to detect PHP version (output: $output).");
+		}
 
-		} elseif ($this->info->phpDbgVersion && version_compare($this->info->version, '7.0.0', '<')) {
-			throw new \Exception('Unable to use phpdbg on PHP < 7.0.0.');
-
-		} elseif ($this->cgi && $this->error) {
+		$this->info = $info;
+		$this->error .= substr($output, 0, $pos);
+		if ($this->cgi && $this->error) {
 			$this->error .= "\n(note that PHP CLI generates better error messages)";
 		}
 	}
 
 
 	/**
-	 * @return static
+	 * Returns a new instance with additional command-line arguments appended.
+	 * @param list<string>  $args
 	 */
-	public function withPhpIniOption(string $name, ?string $value = null): self
+	public function withArguments(array $args): static
 	{
 		$me = clone $this;
-		$me->commandLine .= ' -d ' . Helpers::escapeArg($name . ($value === null ? '' : "=$value"));
+		$me->commandLine = [...$me->commandLine, ...$args];
 		return $me;
 	}
 
 
+	/**
+	 * Returns a new instance with a -d INI option appended to the command line.
+	 */
+	public function withPhpIniOption(string $name, ?string $value = null): static
+	{
+		return $this->withArguments(['-d', $name . ($value === null ? '' : "=$value")]);
+	}
+
+
 	public function getCommandLine(): string
+	{
+		return implode(' ', array_map([Helpers::class, 'escapeArg'], $this->commandLine));
+	}
+
+
+	/** @return list<string> */
+	public function getCommand(): array
 	{
 		return $this->commandLine;
 	}
@@ -109,6 +114,7 @@ class PhpInterpreter
 	}
 
 
+	/** @return array<array{string, string}>  [engine name, version] */
 	public function getCodeCoverageEngines(): array
 	{
 		return $this->info->codeCoverageEngines;
@@ -136,6 +142,6 @@ class PhpInterpreter
 
 	public function hasExtension(string $name): bool
 	{
-		return in_array(strtolower($name), array_map('strtolower', $this->info->extensions), true);
+		return in_array(strtolower($name), array_map('strtolower', $this->info->extensions), strict: true);
 	}
 }

@@ -1,13 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Latte (https://latte.nette.org)
  * Copyright (c) 2008 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Latte;
+
+use function array_filter, array_keys, array_search, array_slice, array_unique, count, is_array, is_object, is_string, levenshtein, max, min, strlen, strpos;
+use const PHP_VERSION_ID;
 
 
 /**
@@ -16,27 +17,6 @@ namespace Latte;
  */
 class Helpers
 {
-	/** @var array<string, int>  empty (void) HTML elements */
-	public static $emptyElements = [
-		'img' => 1, 'hr' => 1, 'br' => 1, 'input' => 1, 'meta' => 1, 'area' => 1, 'embed' => 1, 'keygen' => 1, 'source' => 1, 'base' => 1,
-		'col' => 1, 'link' => 1, 'param' => 1, 'basefont' => 1, 'frame' => 1, 'isindex' => 1, 'wbr' => 1, 'command' => 1, 'track' => 1,
-	];
-
-
-	/**
-	 * Checks callback.
-	 * @param  mixed  $callable
-	 */
-	public static function checkCallback($callable): callable
-	{
-		if (!is_callable($callable, false, $text)) {
-			throw new \InvalidArgumentException("Callback '$text' is not callable.");
-		}
-
-		return $callable;
-	}
-
-
 	/**
 	 * Finds the best suggestion.
 	 * @param  string[]  $items
@@ -56,22 +36,80 @@ class Helpers
 	}
 
 
-	public static function removeFilter(string &$modifier, string $filter): bool
+	/** intentionally without callable typehint, because it generates bad error messages */
+	public static function toReflection($callable): \ReflectionFunctionAbstract
 	{
-		$tmp = str_replace('|checkUrl', '', $modifier);
-		if ($filter === 'noescape' && preg_match('#\|noescape\s*\S#Di', $tmp)) {
-			trigger_error("Filter |noescape should be placed at the very end in '$tmp'", E_USER_DEPRECATED);
+		if (is_string($callable) && strpos($callable, '::')) {
+			return PHP_VERSION_ID < 80300
+				? new \ReflectionMethod($callable)
+				: \ReflectionMethod::createFromMethodName($callable);
+		} elseif (is_array($callable)) {
+			return new \ReflectionMethod($callable[0], $callable[1]);
+		} elseif (is_object($callable) && !$callable instanceof \Closure) {
+			return new \ReflectionMethod($callable, '__invoke');
+		} else {
+			return new \ReflectionFunction($callable);
 		}
-		$modifier = preg_replace('#\|(' . $filter . ')\s?(?=\||$)#Di', '', $modifier, -1, $found);
-		return (bool) $found;
+	}
+
+
+	public static function sortBeforeAfter(array $list): array
+	{
+		foreach ($list as $name => $info) {
+			if (!$info instanceof \stdClass || !($info->before ?? $info->after ?? null)) {
+				continue;
+			}
+
+			unset($list[$name]);
+			$names = array_keys($list);
+			$best = null;
+
+			foreach ((array) $info->before as $target) {
+				if ($target === '*') {
+					$best = 0;
+				} elseif (isset($list[$target])) {
+					$pos = array_search($target, $names, true);
+					$best = min($pos, $best ?? $pos);
+				}
+			}
+
+			foreach ((array) ($info->after ?? null) as $target) {
+				if ($target === '*') {
+					$best = count($names);
+				} elseif (isset($list[$target])) {
+					$pos = array_search($target, $names, true);
+					$best = max($pos + 1, $best);
+				}
+			}
+
+			$list = array_slice($list, 0, $best, true)
+				+ [$name => $info]
+				+ array_slice($list, $best, null, true);
+		}
+
+		return $list;
+	}
+
+
+	public static function removeNulls(array &$items): void
+	{
+		$items = array_values(array_filter($items, fn($item) => $item !== null));
 	}
 
 
 	/**
-	 * Starts the $haystack string with the prefix $needle?
+	 * Attempts to map the compiled template to the source.
 	 */
-	public static function startsWith(string $haystack, string $needle): bool
+	public static function mapCompiledToSource(string $compiledFile, ?int $compiledLine = null): ?array
 	{
-		return strncmp($haystack, $needle, strlen($needle)) === 0;
+		if (!Runtime\Cache::isCacheFile($compiledFile)) {
+			return null;
+		}
+
+		$content = file_get_contents($compiledFile);
+		$name = preg_match('#^/\*\* source: (\S.+) \*/#m', $content, $m) ? $m[1] : null;
+		$compiledLine && preg_match('~/\* line (\d+) \*/~', explode("\n", $content)[$compiledLine - 1], $pos);
+		$line = isset($pos[1]) ? (int) $pos[1] : null;
+		return $name || $line ? ['name' => $name, 'line' => $line] : null;
 	}
 }

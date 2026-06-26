@@ -4,9 +4,14 @@ namespace Comgate\SDK\Entity\Request;
 
 class SingleTransferRequest implements IRequest
 {
-	protected int $transferId;
-
-	protected bool $test;
+	/**
+	 * @var int
+	 */
+	protected $transferId;
+	/**
+	 * @var bool
+	 */
+	protected $test;
 
 	public function __construct(int $transferId, bool $test = false)
 	{
@@ -19,11 +24,13 @@ class SingleTransferRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'singleTransfer';
+		$urn = 'singleTransfer/transferId/' . $this->getTransferId() . '.json';
+		$params = ['test' => $this->isTest() ? 'true' : 'false'];
+		return $urn . '?' . http_build_query($params);
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, string|int>
 	 */
 	public function toArray(): array
 	{

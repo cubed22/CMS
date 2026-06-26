@@ -1,13 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function addcslashes, array_reverse, array_slice, array_splice, dechex, dirname, explode, file, file_put_contents, get_resource_type, implode, is_array, is_bool, is_float, is_int, is_object, is_resource, is_string, ltrim, max, md5, method_exists, min, mkdir, ord, pathinfo, preg_match, preg_replace, preg_replace_callback, spl_object_hash, str_contains, str_pad, str_repeat, str_replace, strlen, strpos, strrpos, strtoupper, strtr, substr, substr_count, substr_replace, trim, uniqid, var_export;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
@@ -16,34 +17,29 @@ namespace Tester;
  */
 class Dumper
 {
-	public static $maxLength = 70;
-
-	public static $maxDepth = 10;
-
-	public static $dumpDir = 'output';
-
-	public static $maxPathSegments = 3;
-
-	public static $pathSeparator;
+	public static int $maxLength = 70;
+	public static int $maxDepth = 10;
+	public static string $dumpDir = 'output';
+	public static int $maxPathSegments = 3;
+	public static ?string $pathSeparator = null;
 
 
 	/**
-	 * Dumps information about a variable in readable format.
-	 * @param  mixed  $var  variable to dump
+	 * Converts a variable to a compact single-line string representation.
 	 */
-	public static function toLine($var): string
+	public static function toLine(mixed $var): string
 	{
 		if (is_bool($var)) {
-			return $var ? 'TRUE' : 'FALSE';
+			return $var ? 'true' : 'false';
 
 		} elseif ($var === null) {
-			return 'NULL';
+			return 'null';
 
 		} elseif (is_int($var)) {
 			return "$var";
 
 		} elseif (is_float($var)) {
-			return var_export($var, true);
+			return var_export($var, return: true);
 
 		} elseif (is_string($var)) {
 			if (preg_match('#^(.{' . self::$maxLength . '}).#su', $var, $m)) {
@@ -72,7 +68,7 @@ class Dumper
 			return "[$out]";
 
 		} elseif ($var instanceof \Throwable) {
-			return 'Exception ' . get_class($var) . ': ' . ($var->getCode() ? '#' . $var->getCode() . ' ' : '') . $var->getMessage();
+			return 'Exception ' . $var::class . ': ' . ($var->getCode() ? '#' . $var->getCode() . ' ' : '') . $var->getMessage();
 
 		} elseif ($var instanceof Expect) {
 			return $var->dump();
@@ -89,13 +85,9 @@ class Dumper
 	}
 
 
-	/**
-	 * Formats object to line.
-	 * @param  object  $object
-	 */
-	private static function objectToLine($object): string
+	private static function objectToLine(object $object): string
 	{
-		$line = get_class($object);
+		$line = $object::class;
 		if ($object instanceof \DateTime || $object instanceof \DateTimeInterface) {
 			$line .= '(' . $object->format('Y-m-d H:i:s O') . ')';
 		}
@@ -105,30 +97,26 @@ class Dumper
 
 
 	/**
-	 * Dumps variable in PHP format.
-	 * @param  mixed  $var  variable to dump
+	 * Converts a variable to a pretty-printed PHP representation.
 	 */
-	public static function toPhp($var): string
+	public static function toPhp(mixed $var): string
 	{
 		return self::_toPhp($var);
 	}
 
 
-	/**
-	 * Returns object's stripped hash.
-	 * @param  object  $object
-	 */
-	private static function hash($object): string
+	private static function hash(object $object): string
 	{
 		return '#' . substr(md5(spl_object_hash($object)), 0, 4);
 	}
 
 
-	private static function _toPhp(&$var, array &$list = [], int $level = 0, int &$line = 1): string
+	/** @param mixed[]  $list */
+	private static function _toPhp(mixed &$var, array &$list = [], int $level = 0, int &$line = 1): string
 	{
 		if (is_float($var)) {
 			$var = str_replace(',', '.', "$var");
-			return strpos($var, '.') === false ? $var . '.0' : $var;
+			return !str_contains($var, '.') ? $var . '.0' : $var;
 
 		} elseif (is_bool($var)) {
 			return $var ? 'true' : 'false';
@@ -146,7 +134,7 @@ class Dumper
 
 			static $marker;
 			if ($marker === null) {
-				$marker = uniqid("\x00", true);
+				$marker = uniqid("\x00", more_entropy: true);
 			}
 
 			if (empty($var)) {
@@ -173,7 +161,7 @@ class Dumper
 				}
 
 				unset($var[$marker]);
-				if (strpos($outShort, "\n") === false && strlen($outShort) < self::$maxLength) {
+				if (!str_contains($outShort, "\n") && strlen($outShort) < self::$maxLength) {
 					$line = $oldLine;
 					$out = $outShort;
 				}
@@ -185,6 +173,9 @@ class Dumper
 			$rc = new \ReflectionFunction($var);
 			return "/* Closure defined in file {$rc->getFileName()} on line {$rc->getStartLine()} */";
 
+		} elseif ($var instanceof \UnitEnum) {
+			return $var::class . '::' . $var->name;
+
 		} elseif (is_object($var)) {
 			if (($rc = new \ReflectionObject($var))->isAnonymous()) {
 				return "/* Anonymous class defined in file {$rc->getFileName()} on line {$rc->getStartLine()} */";
@@ -192,7 +183,7 @@ class Dumper
 
 			$arr = (array) $var;
 			$space = str_repeat("\t", $level);
-			$class = get_class($var);
+			$class = $var::class;
 			$used = &$list[spl_object_hash($var)];
 
 			if (empty($arr)) {
@@ -229,7 +220,7 @@ class Dumper
 			return '/* resource ' . get_resource_type($var) . ' */';
 
 		} else {
-			return var_export($var, true);
+			return var_export($var, return: true);
 		}
 	}
 
@@ -245,16 +236,14 @@ class Dumper
 		];
 		$utf8 = preg_match('##u', $s);
 		$escaped = preg_replace_callback(
-			$utf8 ? '#[\p{C}\\\\]#u' : '#[\x00-\x1F\x7F-\xFF\\\\]#',
-			function ($m) use ($special) {
-				return $special[$m[0]] ?? (strlen($m[0]) === 1
-						? '\x' . str_pad(strtoupper(dechex(ord($m[0]))), 2, '0', STR_PAD_LEFT) . ''
-						: '\u{' . strtoupper(ltrim(dechex(self::utf8Ord($m[0])), '0')) . '}');
-			},
-			$s
+			$utf8 ? '#[\p{C}\\\]#u' : '#[\x00-\x1F\x7F-\xFF\\\]#',
+			fn($m) => $special[$m[0]] ?? (strlen($m[0]) === 1
+				? '\x' . str_pad(strtoupper(dechex(ord($m[0]))), 2, '0', STR_PAD_LEFT) . ''
+				: '\u{' . strtoupper(ltrim(dechex(self::utf8Ord($m[0])), '0')) . '}'),
+			$s,
 		);
 		return $s === str_replace('\\\\', '\\', $escaped)
-			? "'" . preg_replace('#\'|\\\\(?=[\'\\\\]|$)#D', '\\\\$0', $s) . "'"
+			? "'" . preg_replace('#\'|\\\(?=[\'\\\]|$)#D', '\\\$0', $s) . "'"
 			: '"' . addcslashes($escaped, '"$') . '"';
 	}
 
@@ -265,20 +254,18 @@ class Dumper
 			"\r" => "\\r\r",
 			"\n" => "\\n\n",
 			"\t" => "\\t\t",
-			"\e" => '\\e',
+			"\e" => '\e',
 			"'" => "'",
 		];
 		$utf8 = preg_match('##u', $s);
 		$escaped = preg_replace_callback(
 			$utf8 ? '#[\p{C}\']#u' : '#[\x00-\x1F\x7F-\xFF\']#',
-			function ($m) use ($special) {
-				return "\e[22m"
-					. ($special[$m[0]] ?? (strlen($m[0]) === 1
-						? '\x' . str_pad(strtoupper(dechex(ord($m[0]))), 2, '0', STR_PAD_LEFT)
-						: '\u{' . strtoupper(ltrim(dechex(self::utf8Ord($m[0])), '0')) . '}'))
-					. "\e[1m";
-			},
-			$s
+			fn($m) => Ansi::boldOff()
+			. ($special[$m[0]] ?? (strlen($m[0]) === 1
+				? '\x' . str_pad(strtoupper(dechex(ord($m[0]))), 2, '0', STR_PAD_LEFT)
+				: '\u{' . strtoupper(ltrim(dechex(self::utf8Ord($m[0])), '0')) . '}'))
+			. Ansi::boldOn(),
+			$s,
 		);
 		return "'" . $escaped . "'";
 	}
@@ -299,12 +286,15 @@ class Dumper
 	}
 
 
+	/**
+	 * Formats an exception with its message, trace, and diff command into a human-readable string.
+	 */
 	public static function dumpException(\Throwable $e): string
 	{
 		$trace = $e->getTrace();
 		array_splice($trace, 0, $e instanceof \ErrorException ? 1 : 0, [['file' => $e->getFile(), 'line' => $e->getLine()]]);
 
-		$testFile = null;
+		$testFile = $e->getFile();
 		foreach (array_reverse($trace) as $item) {
 			if (isset($item['file'])) { // in case of shutdown handler, we want to skip inner-code blocks and debugging calls
 				$testFile = $item['file'];
@@ -334,7 +324,7 @@ class Dumper
 				for (; $i && $i < strlen($actual) && $actual[$i - 1] >= "\x80" && $actual[$i] >= "\x80" && $actual[$i] < "\xC0"; $i--);
 				$i = max(0, min(
 					$i - (int) (self::$maxLength / 3), // try to display 1/3 of shorter string
-					max(strlen($actual), strlen($expected)) - self::$maxLength + 3 // 3 = length of ...
+					max(strlen($actual), strlen($expected)) - self::$maxLength + 3, // 3 = length of ...
 				));
 				if ($i) {
 					$expected = substr_replace($expected, '...', 0, $i);
@@ -352,35 +342,35 @@ class Dumper
 			}
 
 			$message = strtr($message, [
-				'%1' => self::color('yellow') . self::toLine($actual) . self::color('white'),
-				'%2' => self::color('yellow') . self::toLine($expected) . self::color('white'),
+				'%1' => Ansi::color('yellow') . self::toLine($actual) . Ansi::color('white'),
+				'%2' => Ansi::color('yellow') . self::toLine($expected) . Ansi::color('white'),
 			]);
 		} else {
-			$message = ($e instanceof \ErrorException ? Helpers::errorTypeToString($e->getSeverity()) : get_class($e))
+			$message = ($e instanceof \ErrorException ? Helpers::errorTypeToString($e->getSeverity()) : $e::class)
 				. ': ' . preg_replace('#[\x00-\x09\x0B-\x1F]+#', ' ', $e->getMessage());
 		}
 
-		$s = self::color('white', $message) . "\n\n"
+		$s = Ansi::colorize($message, 'white') . "\n\n"
 			. (isset($stored) ? 'diff ' . Helpers::escapeArg($stored[0]) . ' ' . Helpers::escapeArg($stored[1]) . "\n\n" : '');
 
 		foreach ($trace as $item) {
-			$item += ['file' => null, 'class' => null, 'type' => null, 'function' => null];
+			$item += ['file' => null, 'line' => null, 'class' => null, 'type' => null, 'function' => null];
 			if ($e instanceof AssertException && $item['file'] === __DIR__ . DIRECTORY_SEPARATOR . 'Assert.php') {
 				continue;
 			}
 
-			$line = $item['class'] === Assert::class && method_exists($item['class'], $item['function'])
-				&& strpos($tmp = file($item['file'])[$item['line'] - 1], "::$item[function](") ? $tmp : null;
+			$line = $item['class'] === Assert::class && isset($item['function'], $item['file']) && method_exists($item['class'], $item['function'])
+				&& strpos($tmp = (file($item['file']) ?: [])[$item['line'] - 1] ?? '', "::$item[function](") ? $tmp : null;
 
 			$s .= 'in '
 				. ($item['file']
 					? (
-						($item['file'] === $testFile ? self::color('white') : '')
+						($item['file'] === $testFile ? Ansi::color('white') : '')
 						. implode(
 							self::$pathSeparator ?? DIRECTORY_SEPARATOR,
-							array_slice(explode(DIRECTORY_SEPARATOR, $item['file']), -self::$maxPathSegments)
+							array_slice(explode(DIRECTORY_SEPARATOR, $item['file']), -self::$maxPathSegments),
 						)
-						. "($item[line])" . self::color('gray') . ' '
+						. "($item[line])" . Ansi::color('gray') . ' '
 					)
 					: '[internal function]'
 				)
@@ -388,7 +378,7 @@ class Dumper
 					? trim($line)
 					: $item['class'] . $item['type'] . $item['function'] . ($item['function'] ? '()' : '')
 				)
-				. self::color() . "\n";
+				. Ansi::reset() . "\n";
 		}
 
 		if ($e->getPrevious()) {
@@ -400,9 +390,9 @@ class Dumper
 
 
 	/**
-	 * Dumps data to folder 'output'.
+	 * Saves assertion dump to the output directory (configured by $dumpDir).
 	 */
-	public static function saveOutput(string $testFile, $content, string $suffix = ''): string
+	public static function saveOutput(string $testFile, mixed $content, string $suffix = ''): string
 	{
 		$path = self::$dumpDir . DIRECTORY_SEPARATOR . pathinfo($testFile, PATHINFO_FILENAME) . $suffix;
 		if (!preg_match('#/|\w:#A', self::$dumpDir)) {
@@ -415,27 +405,18 @@ class Dumper
 	}
 
 
-	/**
-	 * Applies color to string.
-	 */
+	/** @deprecated use Ansi::color() or Ansi::colorize() */
 	public static function color(string $color = '', ?string $s = null): string
 	{
-		$colors = [
-			'black' => '0;30', 'gray' => '1;30', 'silver' => '0;37', 'white' => '1;37',
-			'navy' => '0;34', 'blue' => '1;34', 'green' => '0;32', 'lime' => '1;32',
-			'teal' => '0;36', 'aqua' => '1;36', 'maroon' => '0;31', 'red' => '1;31',
-			'purple' => '0;35', 'fuchsia' => '1;35', 'olive' => '0;33', 'yellow' => '1;33',
-			null => '0',
-		];
-		$c = explode('/', $color);
-		return "\e["
-			. str_replace(';', "m\e[", $colors[$c[0]] . (empty($c[1]) ? '' : ';4' . substr($colors[$c[1]], -1)))
-			. 'm' . $s . ($s === null ? '' : "\e[0m");
+		return $s === null
+			? Ansi::color($color)
+			: Ansi::colorize($s, $color);
 	}
 
 
+	/** @deprecated use Ansi::stripAnsi() */
 	public static function removeColors(string $s): string
 	{
-		return preg_replace('#\e\[[\d;]+m#', '', $s);
+		return Ansi::stripAnsi($s);
 	}
 }

@@ -22,7 +22,7 @@
 		"tracy/tracy": "^2.8",
 		"phpmailer/phpmailer": "^6.9",
 		"comgate/sdk": "^1.0",
-		"ublaboo/datagrid": "*",
+		"ublaboo/datagrid": "^6.10",
 		"janmarek/webloader": "^2.0",
 		"natxet/cssmin": "^3.0"
 	},

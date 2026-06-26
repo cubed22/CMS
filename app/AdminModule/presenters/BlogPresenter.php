@@ -4,6 +4,7 @@ namespace App\AdminModule\Presenters;
 use Nette\Application\UI\Form;
 use App\Model;
 use App\Components\AdminGrid;
+use Nette\Utils\Html;
 use Nette\Utils\Image;
 use Ublaboo\DataGrid\Column\Action\Confirmation\StringConfirmation;
 use Ublaboo\DataGrid\DataGrid;
@@ -451,32 +452,64 @@ final class BlogPresenter extends AdminPresenter
         $this->flashMessage('Položka byla upravena.');
 
         $this->redrawControl('messageSnippet');
-        $this->redrawControl('itemsSnippet');
+        $this['grid']->redrawControl();
     }
 
-    public function createComponentSimpleGrid(string $name): AdminGrid
+    /**
+     * Create the grid component for listing blog items.
+     *
+     * @param string $name
+     * @return AdminGrid
+     */
+    public function createComponentGrid(string $name): AdminGrid
     {
         $grid = new AdminGrid($this, $name);
-
         $data = $this->blog->queryAll($this->locale(), null, "time DESC");
-
         $grid->setDataSource($data);
+
+        $grid->addGroupAction('Smazat vybrané')->onSelect[] = [$this, 'gridDelete'];
+
+        $grid->setRowCallback(function($item, $tr) {
+            if (!$item->active) {
+                // Přidá HTML třídu na celý řádek <tr>
+                $tr->addClass('row-inactive');
+            }
+        });
+
+        $grid->addColumnImage('image', 'Obrázek',
+            function($row) {
+                $record = $this->blog->find($row->id, $this->locale());
+                return $record->data()->filename ? 'www/upload/blog/small/' . $record->data()->filename : '';
+            },
+            function($row) {
+                $record = $this->blog->find($row->id, $this->locale());
+                return $record->locale()->name;
+            }
+        );
+
 
         $grid->addColumnText('name', 'Název', ':blog_lang.name')
             ->setRenderer(function ($row) {
                 $record = $this->blog->find($row->id, $this->locale());
-                return $record->locale()->name;
+                return Html::el('a')
+                    ->href($this->link('Blog:detail', ['id' => $record->data()->id]))
+                    ->setHtml($record->locale()->name);
             })
             ->setSortable()
             ->setFilterText();
 
-        $grid->addColumnDateTime('time', 'Datum')
+        $grid->addColumnDateTimeUnix('time', 'Datum', null, false)
             ->setFormat('j.n.Y')
             ->setAlign('center')
-            ->setSortable()
-            ->setFilterDate();
+            ->setSortable();
 
-        $grid->addColumnText('categories', 'Kategorie')
+
+        $items = $this->blogCategories->findAll();
+        $categories = [null => '==='];
+        foreach ($items as $item) {
+            $categories[$item->data()->id] = $item->data()->name;
+        }
+        $grid->addColumnText('categories', 'Kategorie/Štítky', ':blog_to_categories.category_id')
             ->setRenderer(function ($row) {
                 $categories = [];
                 foreach ($row->related('blog_to_categories') as $relation) {
@@ -486,7 +519,8 @@ final class BlogPresenter extends AdminPresenter
                     }
                 }
                 return implode(', ', $categories);
-            });
+            })
+            ->setFilterSelect($categories);
 
         $grid->addColumnText('active', 'Aktivní')
             ->setRenderer(function ($row) {
@@ -495,8 +529,21 @@ final class BlogPresenter extends AdminPresenter
             })
             ->setSortable()
             ->setAlign('center')
-            ->setFilterSelect([1 => 'Ano', 0 => 'Ne']);
+            ->setFilterSelect([null => '===', 1 => 'Ano', 0 => 'Ne']);
 
+        $grid->addAction('detail', '')
+        ->setRenderer(function ($row) {
+            $record = $this->blog->find($row->id, $this->locale());
+            return Html::el('a')
+                ->href($this->link(':Frontend:Blog:detail', [
+                    'url' => $record->locale()->url,
+                    'admin' => 1,
+                    'lang' => $this->locale(),
+                ]))
+                ->setHtml('<i class="fas fa-external-link-alt"></i>')
+                ->setAttribute('class', 'btn btn-light btn-sm')
+                ->setAttribute('target', '_blank');
+        });
 
         $grid->addAction('toggleActive', '', 'toggleActive!', ['id' => 'id'])
             ->setIcon('power-off')
@@ -515,6 +562,23 @@ final class BlogPresenter extends AdminPresenter
             ->setConfirmation(new StringConfirmation('Opravdu odebrat článek?'));
 
         return $grid;
+    }
+
+    public function gridDelete(array $ids): void
+    {
+        foreach ($ids as $id) {
+            bdump($id);
+            //$this->handleRemove($id);
+        }
+
+        $this->flashMessage('Vybrané položky byly smazány.', 'danger');
+
+        if ($this->isAjax()) {
+            $this['grid']->redrawControl();
+            $this->redrawControl('messageSnippet');
+        } else {
+            $this->redirect('this');
+        }
     }
 }
 

@@ -1,23 +1,25 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function is_array;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
- * Data provider helpers.
+ * Loads and filters test data from PHP or INI files.
  * @internal
  */
 class DataProvider
 {
 	/**
-	 * @throws \Exception
+	 * Loads data sets from a PHP or INI file, optionally filtered by a query string.
+	 * @return array<string, mixed>
 	 */
 	public static function load(string $file, string $query = ''): array
 	{
@@ -26,9 +28,7 @@ class DataProvider
 		}
 
 		if (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
-			$data = (function () {
-				return require func_get_arg(0);
-			})(realpath($file));
+			$data = (fn() => require func_get_arg(0))(realpath($file));
 
 			if ($data instanceof \Traversable) {
 				$data = iterator_to_array($data);
@@ -36,7 +36,7 @@ class DataProvider
 				throw new \Exception("Data provider '$file' did not return array or Traversable.");
 			}
 		} else {
-			$data = @parse_ini_file($file, true); // @ is escalated to exception
+			$data = @parse_ini_file($file, true, INI_SCANNER_TYPED); // @ is escalated to exception
 			if ($data === false) {
 				throw new \Exception("Cannot parse data provider file '$file'.");
 			}
@@ -52,6 +52,9 @@ class DataProvider
 	}
 
 
+	/**
+	 * Checks whether a data-set key matches the query filter criteria.
+	 */
 	public static function testQuery(string $input, string $query): bool
 	{
 		$replaces = ['' => '=', '=>' => '>=', '=<' => '<='];
@@ -72,34 +75,23 @@ class DataProvider
 	}
 
 
-	private static function compare($l, string $operator, $r): bool
+	private static function compare(mixed $l, string $operator, mixed $r): bool
 	{
-		switch ($operator) {
-			case '>':
-				return $l > $r;
-			case '=>':
-			case '>=':
-				return $l >= $r;
-			case '<':
-				return $l < $r;
-			case '=<':
-			case '<=':
-				return $l <= $r;
-			case '=':
-			case '==':
-				return $l == $r;
-			case '!':
-			case '!=':
-			case '<>':
-				return $l != $r;
-		}
-
-		throw new \InvalidArgumentException("Unknown operator $operator.");
+		return match ($operator) {
+			'>' => $l > $r,
+			'>=', '=>' => $l >= $r,
+			'<' => $l < $r,
+			'=<', '<=' => $l <= $r,
+			'=', '==' => $l == $r,
+			'!', '!=', '<>' => $l != $r,
+			default => throw new \InvalidArgumentException("Unknown operator '$operator'"),
+		};
 	}
 
 
 	/**
-	 * @throws \Exception
+	 * Parses a @dataProvider annotation value into its file path, query, and optional flag.
+	 * @return array{string, string, bool}  [file path, query, optional]
 	 */
 	public static function parseAnnotation(string $annotation, string $file): array
 	{

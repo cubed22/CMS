@@ -2,8 +2,7 @@
 
 namespace Comgate\SDK\Http;
 
-use GuzzleHttp\Psr7\Query;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\MessageInterface;
 
 class Response
 {
@@ -14,11 +13,14 @@ class Response
 	protected $content;
 
 	/**
-	 * @var ResponseInterface
+	 * @var MessageInterface
 	 */
 	protected $origin;
 
-	public function __construct(ResponseInterface $origin)
+	/**
+	 * @param MessageInterface $origin
+	 */
+	public function __construct($origin)
 	{
 		$this->origin = $origin;
 	}
@@ -36,5 +38,13 @@ class Response
 		}
 
 		return $this->content;
+	}
+
+	/**
+	 * @return string[][]
+	 */
+	public function getHeader()
+	{
+		return $this->origin->getHeaders();
 	}
 }

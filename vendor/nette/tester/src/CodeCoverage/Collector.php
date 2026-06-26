@@ -1,39 +1,37 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\CodeCoverage;
 use pcov;
+use function defined, in_array;
 
 
 /**
- * Code coverage collector.
+ * Collects code coverage data from a test process and merges it into a shared file.
  */
 class Collector
 {
 	public const
-		ENGINE_PCOV = 'PCOV',
-		ENGINE_PHPDBG = 'PHPDBG',
-		ENGINE_XDEBUG = 'Xdebug';
+		EnginePcov = 'PCOV',
+		EnginePhpdbg = 'PHPDBG',
+		EngineXdebug = 'Xdebug';
 
 	/** @var resource */
 	private static $file;
-
-	/** @var string */
-	private static $engine;
+	private static string $engine;
 
 
+	/** @return array<array{string, string}>  [engine name, version] */
 	public static function detectEngines(): array
 	{
 		return array_filter([
-			extension_loaded('pcov') ? [self::ENGINE_PCOV, phpversion('pcov')] : null,
-			defined('PHPDBG_VERSION') ? [self::ENGINE_PHPDBG, PHPDBG_VERSION] : null,
-			extension_loaded('xdebug') ? [self::ENGINE_XDEBUG, phpversion('xdebug')] : null,
+			extension_loaded('pcov') ? [self::EnginePcov, (string) phpversion('pcov')] : null,
+			defined('PHPDBG_VERSION') ? [self::EnginePhpdbg, (string) PHPDBG_VERSION] : null,
+			extension_loaded('xdebug') ? [self::EngineXdebug, (string) phpversion('xdebug')] : null,
 		]);
 	}
 
@@ -55,13 +53,13 @@ class Collector
 
 		} elseif (!in_array(
 			$engine,
-			array_map(function (array $engineInfo) { return $engineInfo[0]; }, self::detectEngines()),
-			true
+			array_map(fn(array $engineInfo) => $engineInfo[0], self::detectEngines()),
+			strict: true,
 		)) {
 			throw new \LogicException("Code coverage engine '$engine' is not supported.");
 		}
 
-		self::$file = fopen($file, 'c+');
+		self::$file = fopen($file, 'c+') ?: throw new \RuntimeException("Cannot open file '$file' for code coverage.");
 		self::$engine = $engine;
 		self::{'start' . $engine}();
 
@@ -72,18 +70,18 @@ class Collector
 
 
 	/**
-	 * Flushes all gathered information. Effective only with PHPDBG collector.
+	 * Writes collected coverage to file and resets the oplog. Only effective with the PHPDBG engine.
 	 */
 	public static function flush(): void
 	{
-		if (self::isStarted() && self::$engine === self::ENGINE_PHPDBG) {
+		if (self::isStarted() && self::$engine === self::EnginePhpdbg) {
 			self::save();
 		}
 	}
 
 
 	/**
-	 * Saves information about code coverage. Can be called repeatedly to free memory.
+	 * Merges the current coverage data into the shared coverage file using an exclusive lock.
 	 * @throws \LogicException
 	 */
 	public static function save(): void
@@ -115,6 +113,7 @@ class Collector
 
 	/**
 	 * Collects information about code coverage.
+	 * @return array{array<string, array<int, int>>, array<string, array<int, int>>}  [positive, negative]
 	 */
 	private static function collectPCOV(): array
 	{
@@ -148,6 +147,7 @@ class Collector
 
 	/**
 	 * Collects information about code coverage.
+	 * @return array{array<string, array<int, int>>, array<string, array<int, int>>}  [positive, negative]
 	 */
 	private static function collectXdebug(): array
 	{
@@ -179,10 +179,13 @@ class Collector
 
 	/**
 	 * Collects information about code coverage.
+	 * @return array{array<string, array<int, int>>, array<string, array<int, int>>}  [positive, negative]
 	 */
 	private static function collectPhpDbg(): array
 	{
+		/** @var array<string, array<int, int>> $positive */
 		$positive = phpdbg_end_oplog();
+		/** @var array<string, array<int, int>> $negative */
 		$negative = phpdbg_get_executable();
 
 		foreach ($positive as $file => &$lines) {

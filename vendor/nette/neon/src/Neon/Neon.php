@@ -1,30 +1,32 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Nette\Neon;
 
 
 /**
- * Simple parser & generator for Nette Object Notation.
- * @see https://ne-on.org
+ * Facade for parsing and encoding the NEON format.
+ * @see https://neon.nette.org
  */
 final class Neon
 {
-	public const BLOCK = Encoder::BLOCK;
 	public const Chain = '!!chain';
+
+	/** @deprecated use Neon::Chain */
 	public const CHAIN = self::Chain;
+
+	/** @deprecated use parameter $blockMode */
+	public const BLOCK = Encoder::BLOCK;
 
 
 	/**
-	 * Returns value converted to NEON.
+	 * Encodes a PHP value to a NEON string.
 	 */
-	public static function encode($value, bool $blockMode = false, string $indentation = "\t"): string
+	public static function encode(mixed $value, bool $blockMode = false, string $indentation = "\t"): string
 	{
 		$encoder = new Encoder;
 		$encoder->blockMode = $blockMode;
@@ -34,10 +36,9 @@ final class Neon
 
 
 	/**
-	 * Converts given NEON to PHP value.
-	 * @return mixed
+	 * Parses a NEON string and returns the corresponding PHP value.
 	 */
-	public static function decode(string $input)
+	public static function decode(string $input): mixed
 	{
 		$decoder = new Decoder;
 		return $decoder->decode($input);
@@ -45,17 +46,17 @@ final class Neon
 
 
 	/**
-	 * Converts given NEON file to PHP value.
-	 * @return mixed
+	 * Parses a NEON file and returns the corresponding PHP value. Strips the UTF-8 BOM if present.
 	 */
-	public static function decodeFile(string $file)
+	public static function decodeFile(string $file): mixed
 	{
-		if (!is_file($file)) {
-			throw new Exception("File '$file' does not exist.");
+		$input = @file_get_contents($file); // @ is escalated to exception
+		if ($input === false) {
+			$error = preg_replace('#^\w+\(.*?\): #', '', error_get_last()['message'] ?? '');
+			throw new Exception("Unable to read file '$file'. $error");
 		}
 
-		$input = file_get_contents($file);
-		if (substr($input, 0, 3) === "\u{FEFF}") { // BOM
+		if (str_starts_with($input, "\u{FEFF}")) { // BOM
 			$input = substr($input, 3);
 		}
 

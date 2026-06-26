@@ -8,7 +8,10 @@ use Comgate\SDK\Exception\LogicalException;
 
 class PreauthCancelRequest implements IRequest
 {
-	private string $transId;
+	/**
+	 * @var string
+	 */
+	private $transId;
 
 	public function __construct(string $transId){
 		$this->setTransId($transId);
@@ -19,11 +22,11 @@ class PreauthCancelRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'cancelPreauth';
+		return 'preauth/transId/' . urlencode($this->getTransId()) . '.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, string>
 	 */
 	public function toArray(): array
 	{

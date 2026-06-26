@@ -6,14 +6,14 @@ use Comgate\SDK\Entity\Transfer;
 use Comgate\SDK\Exception\Api\MissingParamException;
 use Comgate\SDK\Exception\ApiException;
 use Comgate\SDK\Http\Response;
-use GuzzleHttp\Psr7\Query;
+use Comgate\SDK\Http\Query;
 
 class TransferListResponse
 {
-       /**
-        * @var array<string, int|string>
-        */
-	protected array $transferList = [];
+	/**
+	 * @var array<int, Transfer>
+	 */
+	protected $transferList = [];
 
 	/**
 	 * @param Response $transferListResponse
@@ -30,7 +30,7 @@ class TransferListResponse
 	}
 
 	/**
-	 * @return array<string, int|string>
+	 * @return array<int, Transfer>
 	 */
 	public function getTransferList(): array
 	{
@@ -38,7 +38,7 @@ class TransferListResponse
 	}
 
 	/**
-	 * @param array<string, int|string> $transferList
+	 * @param array<int, Transfer> $transferList
 	 * @return TransferListResponse
 	 */
 	public function setTransferList(array $transferList): self

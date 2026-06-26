@@ -3,13 +3,12 @@
 namespace Comgate\SDK\Entity\Request;
 
 use Comgate\SDK\Entity\Payment;
-use Comgate\SDK\Exception\LogicalException;
 
 class PaymentCreateRequest implements IRequest
 {
 
 	/** @var Payment */
-	private $payment;
+	protected $payment;
 
 	public function __construct(Payment $payment)
 	{
@@ -21,11 +20,11 @@ class PaymentCreateRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'create';
+		return 'payment.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, bool|string|int|null>
 	 */
 	public function toArray(): array
 	{
@@ -33,6 +32,12 @@ class PaymentCreateRequest implements IRequest
 		$output = $this->payment->getParams();
 
 		$output['price'] = $this->payment->getPrice()->get(); // in cents 10.25 => 1025
+		$output['curr'] = $this->payment->getCurrency();
+		$output['label'] = $this->payment->getLabel();
+		$output['refId'] = $this->payment->getReferenceId();
+		$output['email'] = $this->payment->getEmail();
+		$output['phone'] = $this->payment->getPhone();
+		$output['fullName'] = $this->payment->getFullName();
 		$output['prepareOnly'] = $this->payment->isPrepareOnly() ? 'true' : 'false';
 		$output['method'] = implode('+', $this->payment->getAllowedMethods());
 		unset($output['allowedMethods']);
@@ -43,12 +48,44 @@ class PaymentCreateRequest implements IRequest
 		unset($output['excludedMethods']);
 
 		// Optional
-		$output['preauth'] = (bool)$this->payment->isPreauth() ? 'true' : 'false';
+		$output['preauth'] = $this->payment->isPreauth() ? 'true' : 'false';
 		$output['test'] = $this->payment->isTest() ? 'true' : 'false';
 		$output['verification'] = $this->payment->isVerification() ? 'true' : 'false';
-		$output['embedded'] = $this->payment->isEmbedded() ? 'true' : 'false';
 		$output['initRecurring'] = $this->payment->isInitRecurring() ? 'true' : 'false';
 		$output['dynamicExpiration'] = $this->payment->isDynamicExpiration() ? 'true' : 'false';
+		$output['account'] = $this->payment->getAccount() ?? '';
+		$output['billingAddrCity'] = $this->payment->getBillingAddrCity() ?? '';
+		$output['billingAddrStreet'] = $this->payment->getBillingAddrStreet() ?? '';
+		$output['billingAddrPostalCode'] = $this->payment->getBillingAddrPostalCode() ?? '';
+		$output['billingAddrCountry'] = $this->payment->getBillingAddrCountry() ?? '';
+		$output['delivery'] = $this->payment->getDelivery() ?? '';
+		$output['homeDeliveryCity'] = $this->payment->getHomeDeliveryCity() ?? '';
+		$output['homeDeliveryStreet'] = $this->payment->getHomeDeliveryStreet() ?? '';
+		$output['homeDeliveryPostalCode'] = $this->payment->getHomeDeliveryPostalCode() ?? '';
+		$output['homeDeliveryCountry'] = $this->payment->getHomeDeliveryCountry() ?? '';
+		$output['category'] = $this->payment->getCategory() ?? '';
+		$output['name'] = $this->payment->getName() ?? '';
+		$output['lang'] = $this->payment->getLang() ?? '';
+		if ($this->payment->getExpirationTime() !== null) {
+			$output['expirationTime'] = $this->payment->getExpirationTime();
+		}
+		$output['url_paid'] = $this->payment->getUrlPaidRedirect() ?? '';
+		$output['url_cancelled'] = $this->payment->getUrlCancelledRedirect() ?? '';
+		$output['url_pending'] = $this->payment->getUrlPendingRedirect() ?? '';
+
+		if($this->payment->getChargeUnregulatedCardFees() !== null) {
+			$output['chargeUnregulatedCardFees'] = $this->payment->getChargeUnregulatedCardFees() ? 'true' : 'false';
+		} else {
+			unset($output['chargeUnregulatedCardFees']);
+		}
+
+		if($this->payment->getEnableApplePayGooglePay() !== null) {
+			$output['enableApplePayGooglePay'] = $this->payment->getEnableApplePayGooglePay() ? 'true' : 'false';
+		} else {
+			unset($output['enableApplePayGooglePay']);
+		}
+
+		$output['embedded'] = $this->payment->isEmbedded() ? 'true' : 'false';
 
 		return $output;
 	}

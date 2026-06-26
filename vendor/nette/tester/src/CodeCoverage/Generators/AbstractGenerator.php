@@ -1,61 +1,50 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\CodeCoverage\Generators;
 
 use Tester\Helpers;
+use function in_array, is_array;
 
 
 /**
- * Code coverage report generator.
+ * Base class for code coverage report generators.
  */
 abstract class AbstractGenerator
 {
 	protected const
-		CODE_DEAD = -2,
-		CODE_UNTESTED = -1,
-		CODE_TESTED = 1;
+		LineDead = -2,
+		LineTested = 1,
+		LineUntested = -1;
 
-	/** @var array */
-	public $acceptFiles = ['php', 'phpt', 'phtml'];
+	/** @var list<string>  file extensions to accept */
+	public array $acceptFiles = ['php', 'phpt', 'phtml'];
 
-	/** @var array */
-	protected $data;
+	/** @var array<string, array<int, int>>  file path => line number => coverage count */
+	protected array $data;
 
-	/** @var array */
-	protected $sources;
-
-	/** @var int */
-	protected $totalSum = 0;
-
-	/** @var int */
-	protected $coveredSum = 0;
+	/** @var string[]  source paths */
+	protected array $sources;
+	protected int $totalSum = 0;
+	protected int $coveredSum = 0;
 
 
 	/**
 	 * @param  string  $file  path to coverage.dat file
-	 * @param  array   $sources  paths to covered source files or directories
+	 * @param  string[]  $sources  paths to covered source files or directories
 	 */
 	public function __construct(string $file, array $sources = [])
 	{
-		if (!is_file($file)) {
-			throw new \Exception("File '$file' is missing.");
-		}
-
-		$this->data = @unserialize(file_get_contents($file)); // @ is escalated to exception
-		if (!is_array($this->data)) {
+		$data = @unserialize(Helpers::readFile($file)); // @ - unserialization may fail
+		if (!is_array($data)) {
 			throw new \Exception("Content of file '$file' is invalid.");
 		}
 
-		$this->data = array_filter($this->data, function (string $path): bool {
-			return @is_file($path); // @ some files or wrappers may not exist, i.e. mock://
-		}, ARRAY_FILTER_USE_KEY);
+		$this->data = array_filter($data, fn(string $path): bool => @is_file($path), ARRAY_FILTER_USE_KEY);
 
 		if (!$sources) {
 			$sources = [Helpers::findCommonDirectory(array_keys($this->data))];
@@ -68,7 +57,7 @@ abstract class AbstractGenerator
 			}
 		}
 
-		$this->sources = array_map('realpath', $sources);
+		$this->sources = array_map(fn(string $source): string => (string) realpath($source), $sources);
 	}
 
 
@@ -79,7 +68,10 @@ abstract class AbstractGenerator
 			throw new \Exception("Unable to write to file '$file'.");
 		}
 
-		ob_start(function (string $buffer) use ($handle) { fwrite($handle, $buffer); }, 4096);
+		ob_start(function (string $buffer) use ($handle) {
+			fwrite($handle, $buffer);
+			return '';
+		}, 4096);
 		try {
 			$this->renderSelf();
 		} catch (\Throwable $e) {
@@ -111,18 +103,22 @@ abstract class AbstractGenerator
 			$iterator->append(
 				is_dir($source)
 					? new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source))
-					: new \ArrayIterator([new \SplFileInfo($source)])
+					: new \ArrayIterator([new \SplFileInfo($source)]),
 			);
 		}
 
-		return new \CallbackFilterIterator($iterator, function (\SplFileInfo $file): bool {
-			return $file->getBasename()[0] !== '.'  // . or .. or .gitignore
-				&& in_array($file->getExtension(), $this->acceptFiles, true);
-		});
+		return new \CallbackFilterIterator(
+			$iterator,
+			fn(\SplFileInfo $file): bool => $file->getBasename()[0] !== '.'  // . or .. or .gitignore
+				&& in_array($file->getExtension(), $this->acceptFiles, strict: true),
+		);
 	}
 
 
-	/** @deprecated  */
+	/**
+	 * @param string[] $files
+	 * @deprecated
+	 */
 	protected static function getCommonFilesPath(array $files): string
 	{
 		return Helpers::findCommonDirectory($files);

@@ -1,11 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
-
-declare(strict_types=1);
 
 require __DIR__ . '/Runner/exceptions.php';
 require __DIR__ . '/Runner/Test.php';
@@ -20,6 +18,7 @@ require __DIR__ . '/Runner/Output/Logger.php';
 require __DIR__ . '/Runner/Output/TapPrinter.php';
 require __DIR__ . '/Runner/Output/ConsolePrinter.php';
 require __DIR__ . '/Runner/Output/JUnitPrinter.php';
+require __DIR__ . '/Framework/Ansi.php';
 require __DIR__ . '/Framework/Helpers.php';
 require __DIR__ . '/Framework/Environment.php';
 require __DIR__ . '/Framework/Assert.php';

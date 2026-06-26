@@ -1,11 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
-
-declare(strict_types=1);
 
 namespace Tester\Runner;
 
@@ -13,25 +11,22 @@ use Tester;
 use Tester\Dumper;
 use Tester\Helpers;
 use Tester\TestCase;
+use function count, in_array, is_array, is_string;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
- * Default test behavior.
+ * Processes test annotations to initiate test variants and assess their results.
  */
 class TestHandler
 {
 	private const HttpOk = 200;
-
-	/** @var Runner */
-	private $runner;
-
-	/** @var string|null */
-	private $tempDir;
+	private ?string $tempDir = null;
 
 
-	public function __construct(Runner $runner)
-	{
-		$this->runner = $runner;
+	public function __construct(
+		private Runner $runner,
+	) {
 	}
 
 
@@ -61,7 +56,7 @@ class TestHandler
 						$prepared[] = $test;
 					} else {
 						foreach (is_array($res) ? $res : [$res] as $testVariety) {
-							/** @var Test $testVariety */
+							\assert($testVariety instanceof Test);
 							if ($testVariety->hasResult()) {
 								$this->runner->prepareTest($testVariety);
 								$this->runner->finishTest($testVariety);
@@ -78,7 +73,9 @@ class TestHandler
 
 		foreach ($tests as $test) {
 			$this->runner->prepareTest($test);
-			$this->runner->addJob(new Job($test, $php, $this->runner->getEnvironmentVariables()));
+			$job = new Job($test, $php, $this->runner->getEnvironmentVariables());
+			$job->setTempDirectory($this->tempDir);
+			$this->runner->addJob($job);
 		}
 	}
 
@@ -87,7 +84,7 @@ class TestHandler
 	{
 		$test = $job->getTest();
 		$annotations = $this->getAnnotations($test->getFile())[0] += [
-			'exitcode' => Job::CODE_OK,
+			'exitcode' => Job::CodeOk,
 			'httpcode' => self::HttpOk,
 		];
 
@@ -97,7 +94,6 @@ class TestHandler
 			}
 
 			foreach ((array) $annotations[$m[1]] as $arg) {
-				/** @var Test|null $res */
 				if ($res = $this->$method($job, $arg)) {
 					$this->runner->finishTest($res);
 					return;
@@ -105,13 +101,13 @@ class TestHandler
 			}
 		}
 
-		$this->runner->finishTest($test->withResult(Test::PASSED, $test->message, $job->getDuration()));
+		$this->runner->finishTest($test->withResult(Test::Passed, $test->message, $job->getDuration()));
 	}
 
 
 	private function initiateSkip(Test $test, string $message): Test
 	{
-		return $test->withResult(Test::SKIPPED, $message);
+		return $test->withResult(Test::Skipped, $message);
 	}
 
 
@@ -119,7 +115,7 @@ class TestHandler
 	{
 		if (preg_match('#^(<=|<|==|=|!=|<>|>=|>)?\s*(.+)#', $version, $matches)
 			&& version_compare($matches[2], $interpreter->getVersion(), $matches[1] ?: '>=')) {
-			return $test->withResult(Test::SKIPPED, "Requires PHP $version.");
+			return $test->withResult(Test::Skipped, "Requires PHP $version.");
 		}
 
 		return null;
@@ -130,7 +126,7 @@ class TestHandler
 	{
 		foreach (preg_split('#[\s,]+#', $value) as $extension) {
 			if (!$interpreter->hasExtension($extension)) {
-				return $test->withResult(Test::SKIPPED, "Requires PHP extension $extension.");
+				return $test->withResult(Test::Skipped, "Requires PHP extension $extension.");
 			}
 		}
 
@@ -140,12 +136,13 @@ class TestHandler
 
 	private function initiatePhpIni(Test $test, string $pair, PhpInterpreter &$interpreter): void
 	{
-		[$name, $value] = explode('=', $pair, 2) + [1 => null];
-		$interpreter = $interpreter->withPhpIniOption($name, $value);
+		$parts = explode('=', $pair, 2);
+		$interpreter = $interpreter->withPhpIniOption($parts[0], $parts[1] ?? null);
 	}
 
 
-	private function initiateDataProvider(Test $test, string $provider)
+	/** @return list<Test>|Test */
+	private function initiateDataProvider(Test $test, string $provider): array|Test
 	{
 		try {
 			[$dataFile, $query, $optional] = Tester\DataProvider::parseAnnotation($provider, $test->getFile());
@@ -154,31 +151,35 @@ class TestHandler
 				throw new \Exception("No records in data provider file '{$test->getFile()}'" . ($query ? " for query '$query'" : '') . '.');
 			}
 		} catch (\Throwable $e) {
-			return $test->withResult(empty($optional) ? Test::FAILED : Test::SKIPPED, $e->getMessage());
+			return $test->withResult(empty($optional) ? Test::Failed : Test::Skipped, $e->getMessage());
 		}
 
-		return array_map(function (string $item) use ($test, $dataFile): Test {
-			return $test->withArguments(['dataprovider' => "$item|$dataFile"]);
-		}, array_keys($data));
+		return array_map(
+			fn(string $item): Test => $test->withArguments(['dataprovider' => "$item|$dataFile"]),
+			array_keys($data),
+		);
 	}
 
 
-	private function initiateMultiple(Test $test, $count): array
+	/** @return list<Test> */
+	private function initiateMultiple(Test $test, string $count): array
 	{
-		return array_map(function (int $i) use ($test): Test {
-			return $test->withArguments(['multiple' => $i]);
-		}, range(0, (int) $count - 1));
+		return array_map(
+			fn(int $i): Test => $test->withArguments(['multiple' => $i]),
+			range(0, (int) $count - 1),
+		);
 	}
 
 
-	private function initiateTestCase(Test $test, $foo, PhpInterpreter $interpreter)
+	/** @return Test|list<Test> */
+	private function initiateTestCase(Test $test, mixed $value, PhpInterpreter $interpreter): Test|array
 	{
 		$methods = null;
 
 		if ($this->tempDir) {
-			$cacheFile = $this->tempDir . DIRECTORY_SEPARATOR . 'TestHandler.testCase.' . substr(md5($test->getSignature()), 0, 5) . '.list';
+			$cacheFile = $this->tempDir . DIRECTORY_SEPARATOR . 'TestHandler.testCase.' . md5($test->getSignature()) . '.list';
 			if (is_file($cacheFile)) {
-				$cache = unserialize(file_get_contents($cacheFile));
+				$cache = unserialize(Helpers::readFile($cacheFile));
 
 				$valid = true;
 				foreach ($cache['files'] as $path => $mTime) {
@@ -196,23 +197,24 @@ class TestHandler
 
 		if ($methods === null) {
 			$job = new Job($test->withArguments(['method' => TestCase::ListMethods]), $interpreter, $this->runner->getEnvironmentVariables());
+			$job->setTempDirectory($this->tempDir);
 			$job->run();
 
-			if (in_array($job->getExitCode(), [Job::CODE_ERROR, Job::CODE_FAIL, Job::CODE_SKIP], true)) {
-				return $test->withResult($job->getExitCode() === Job::CODE_SKIP ? Test::SKIPPED : Test::FAILED, $job->getTest()->stdout);
+			if (in_array($job->getExitCode(), [Job::CodeError, Job::CodeFail, Job::CodeSkip], strict: true)) {
+				return $test->withResult($job->getExitCode() === Job::CodeSkip ? Test::Skipped : Test::Failed, $job->getTest()->getOutput());
 			}
 
 			$stdout = $job->getTest()->stdout;
 
 			if (!preg_match('#^TestCase:([^\n]+)$#m', $stdout, $m)) {
-				return $test->withResult(Test::FAILED, "Cannot list TestCase methods in file '{$test->getFile()}'. Do you call TestCase::run() in it?");
+				return $test->withResult(Test::Failed, "Cannot list TestCase methods in file '{$test->getFile()}'. Do you call TestCase::run() in it?");
 			}
 
 			$testCaseClass = $m[1];
 
 			preg_match_all('#^Method:([^\n]+)$#m', $stdout, $m);
 			if (count($m[1]) < 1) {
-				return $test->withResult(Test::SKIPPED, "Class $testCaseClass in file '{$test->getFile()}' does not contain test methods.");
+				return $test->withResult(Test::Skipped, "Class $testCaseClass in file '{$test->getFile()}' does not contain test methods.");
 			}
 
 			$methods = $m[1];
@@ -226,33 +228,36 @@ class TestHandler
 			}
 		}
 
-		return array_map(function (string $method) use ($test): Test {
-			return $test->withArguments(['method' => $method]);
-		}, $methods);
+		return array_values(array_map(
+			fn(string $method): Test => $test
+				->withTitle(trim("$test->title $method"))
+				->withArguments(['method' => $method]),
+			$methods,
+		));
 	}
 
 
-	private function assessExitCode(Job $job, $code): ?Test
+	private function assessExitCode(Job $job, string|int $code): ?Test
 	{
 		$code = (int) $code;
-		if ($job->getExitCode() === Job::CODE_SKIP) {
+		if ($job->getExitCode() === Job::CodeSkip) {
 			$message = preg_match('#.*Skipped:\n(.*?)$#Ds', $output = $job->getTest()->stdout, $m)
 				? $m[1]
 				: $output;
-			return $job->getTest()->withResult(Test::SKIPPED, trim($message));
+			return $job->getTest()->withResult(Test::Skipped, trim($message));
 
 		} elseif ($job->getExitCode() !== $code) {
-			$message = $job->getExitCode() !== Job::CODE_FAIL
+			$message = $job->getExitCode() !== Job::CodeFail
 				? "Exited with error code {$job->getExitCode()} (expected $code)"
 				: '';
-			return $job->getTest()->withResult(Test::FAILED, trim($message . "\n" . $job->getTest()->stdout));
+			return $job->getTest()->withResult(Test::Failed, trim($message . "\n" . $job->getTest()->getOutput()));
 		}
 
 		return null;
 	}
 
 
-	private function assessHttpCode(Job $job, $code): ?Test
+	private function assessHttpCode(Job $job, string|int $code): ?Test
 	{
 		if (!$this->runner->getInterpreter()->isCgi()) {
 			return null;
@@ -262,7 +267,7 @@ class TestHandler
 		$actual = (int) ($headers['Status'] ?? self::HttpOk);
 		$code = (int) $code;
 		return $code && $code !== $actual
-			? $job->getTest()->withResult(Test::FAILED, "Exited with HTTP code $actual (expected $code)")
+			? $job->getTest()->withResult(Test::Failed, "Exited with HTTP code $actual (expected $code)")
 			: null;
 	}
 
@@ -271,10 +276,10 @@ class TestHandler
 	{
 		$file = dirname($job->getTest()->getFile()) . DIRECTORY_SEPARATOR . $file;
 		if (!is_file($file)) {
-			return $job->getTest()->withResult(Test::FAILED, "Missing matching file '$file'.");
+			return $job->getTest()->withResult(Test::Failed, "Missing matching file '$file'.");
 		}
 
-		return $this->assessOutputMatch($job, file_get_contents($file));
+		return $this->assessOutputMatch($job, Helpers::readFile($file));
 	}
 
 
@@ -285,17 +290,18 @@ class TestHandler
 			[$content, $actual] = Tester\Assert::expandMatchingPatterns($content, $actual);
 			Dumper::saveOutput($job->getTest()->getFile(), $actual, '.actual');
 			Dumper::saveOutput($job->getTest()->getFile(), $content, '.expected');
-			return $job->getTest()->withResult(Test::FAILED, 'Failed: output should match ' . Dumper::toLine($content));
+			return $job->getTest()->withResult(Test::Failed, 'Failed: output should match ' . Dumper::toLine($content));
 		}
 
 		return null;
 	}
 
 
+	/** @return array{array<string|string[]>, ?string}  [annotations, test title] */
 	private function getAnnotations(string $file): array
 	{
-		$annotations = Helpers::parseDocComment(file_get_contents($file));
-		$testTitle = isset($annotations[0])
+		$annotations = Helpers::parseDocComment(Helpers::readFile($file));
+		$testTitle = is_string($annotations[0] ?? null)
 			? preg_replace('#^TEST:\s*#i', '', $annotations[0])
 			: null;
 		return [$annotations, $testTitle];

@@ -1,48 +1,44 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner;
+
+use function array_map, implode, is_array, is_int;
 
 
 /**
- * Test represents one result.
+ * Immutable value object representing a single test and its execution result.
  */
 class Test
 {
 	public const
-		PREPARED = 0,
-		FAILED = 1,
-		PASSED = 2,
-		SKIPPED = 3;
+		Prepared = 0,
+		Failed = 1,
+		Passed = 2,
+		Skipped = 3;
 
-	/** @var string|null */
-	public $title;
+	/** @deprecated */
+	public const
+		PREPARED = self::Prepared,
+		FAILED = self::Failed,
+		PASSED = self::Passed,
+		SKIPPED = self::Skipped;
 
-	/** @var string|null */
-	public $message;
+	public ?string $title;
+	public ?string $message = null;
+	public string $stdout = '';
+	public string $stderr = '';
+	private string $file;
 
-	/** @var string */
-	public $stdout = '';
+	/** @var self::Prepared|self::Failed|self::Passed|self::Skipped */
+	private int $result = self::Prepared;
+	private ?float $duration = null;
 
-	/** @var string */
-	public $stderr = '';
-
-	/** @var string */
-	private $file;
-
-	/** @var int */
-	private $result = self::PREPARED;
-
-	/** @var float|null */
-	private $duration;
-
-	/** @var string[]|string[][] */
+	/** @var list<string|array{string, string}> */
 	private $args = [];
 
 
@@ -60,7 +56,7 @@ class Test
 
 
 	/**
-	 * @return string[]|string[][]
+	 * @return list<string|array{string, string}>
 	 */
 	public function getArguments(): array
 	{
@@ -70,23 +66,22 @@ class Test
 
 	public function getSignature(): string
 	{
-		$args = implode(' ', array_map(function ($arg): string {
-			return is_array($arg) ? "$arg[0]=$arg[1]" : $arg;
-		}, $this->args));
+		$args = implode(' ', array_map(fn($arg): string => is_array($arg) ? "$arg[0]=$arg[1]" : $arg, $this->args));
 
 		return $this->file . ($args ? " $args" : '');
 	}
 
 
+	/** @return self::Failed|self::Passed|self::Skipped */
 	public function getResult(): int
 	{
-		return $this->result;
+		return $this->result ?: throw new \LogicException('Result is not set yet.');
 	}
 
 
 	public function hasResult(): bool
 	{
-		return $this->result !== self::PREPARED;
+		return $this->result !== self::Prepared;
 	}
 
 
@@ -100,9 +95,28 @@ class Test
 
 
 	/**
-	 * @return static
+	 * Returns combined stdout and stderr output.
 	 */
-	public function withArguments(array $args): self
+	public function getOutput(): string
+	{
+		return $this->stdout . ($this->stderr ? "\nSTDERR:\n" . $this->stderr : '');
+	}
+
+
+	public function withTitle(string $title): self
+	{
+		if ($this->hasResult()) {
+			throw new \LogicException('Cannot change title to test which already has a result.');
+		}
+
+		$me = clone $this;
+		$me->title = $title;
+		return $me;
+	}
+
+
+	/** @param array<int|string|array<int|string>>  $args */
+	public function withArguments(array $args): static
 	{
 		if ($this->hasResult()) {
 			throw new \LogicException('Cannot change arguments of test which already has a result.');
@@ -121,10 +135,8 @@ class Test
 	}
 
 
-	/**
-	 * @return static
-	 */
-	public function withResult(int $result, ?string $message, ?float $duration = null): self
+	/** @param self::Failed|self::Passed|self::Skipped  $result */
+	public function withResult(int $result, ?string $message, ?float $duration = null): static
 	{
 		if ($this->hasResult()) {
 			throw new \LogicException("Result of test is already set to $this->result with message '$this->message'.");

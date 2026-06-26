@@ -8,7 +8,10 @@ use Comgate\SDK\Exception\LogicalException;
 
 class RecurringPaymentRequest implements IRequest
 {
-	private Payment $payment;
+	/**
+	 * @var Payment
+	 */
+	private $payment;
 
 	public function __construct(Payment $payment){
 		$this->setPayment($payment);
@@ -19,26 +22,23 @@ class RecurringPaymentRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'recurring';
+		return 'recurring.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, bool|int|string|null>
 	 */
 	public function toArray(): array
 	{
 		// Required
 		$output = [
-			'country' => $this->getPayment()->getCountry(),
 			'test' => $this->getPayment()->isTest(),
 			'price' => $this->getPayment()->getPrice()->get(),
 			'curr' => $this->getPayment()->getCurrency(),
 			'label' => $this->getPayment()->getLabel(),
 			'refId' => $this->getPayment()->getReferenceId(),
 			'account' => $this->getPayment()->getAccount(),
-			'email' => $this->getPayment()->getEmail(),
 			'name' => $this->getPayment()->getName(),
-			'prepareOnly' => $this->getPayment()->isPrepareOnly(),
 			'initRecurringId' => $this->getPayment()->getInitRecurringId(),
 		];
 

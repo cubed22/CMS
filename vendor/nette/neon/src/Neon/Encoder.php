@@ -1,13 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Nette\Neon;
+
+use function array_keys, count, is_array, is_int, is_object, is_string, max, range;
 
 
 /**
@@ -19,24 +19,20 @@ final class Encoder
 	/** @deprecated */
 	public const BLOCK = true;
 
-	/** @var bool */
-	public $blockMode = false;
-
-	/** @var string */
-	public $indentation = "\t";
+	public bool $blockMode = false;
+	public string $indentation = "\t";
 
 
-	/**
-	 * Returns the NEON representation of a value.
-	 */
-	public function encode($val): string
+	/** Encodes a PHP value to a NEON string. */
+	public function encode(mixed $val): string
 	{
 		$node = $this->valueToNode($val, $this->blockMode);
 		return $node->toString();
 	}
 
 
-	public function valueToNode($val, bool $blockMode = false): Node
+	/** Converts a PHP value to its AST node representation. */
+	public function valueToNode(mixed $val, bool $blockMode = false): Node
 	{
 		if ($val instanceof \DateTimeInterface) {
 			return new Node\LiteralNode($val);
@@ -52,7 +48,7 @@ final class Encoder
 		} elseif ($val instanceof Entity) {
 			return new Node\EntityNode(
 				$this->valueToNode($val->value),
-				$this->arrayToNodes((array) $val->attributes)
+				$this->arrayToNodes($val->attributes),
 			);
 
 		} elseif (is_object($val) || is_array($val)) {
@@ -66,8 +62,14 @@ final class Encoder
 			$node->items = $this->arrayToNodes($val, $blockMode);
 			return $node;
 
-		} elseif (is_string($val) && Lexer::requiresDelimiters($val)) {
-			return new Node\StringNode($val);
+		} elseif (is_string($val)) {
+			if (preg_match('//u', $val) === false) {
+				trigger_error('Invalid UTF-8 sequence in string, replaced with U+FFFD', E_USER_WARNING);
+				$val = json_decode(json_encode($val, JSON_INVALID_UTF8_SUBSTITUTE));
+			}
+			return Lexer::requiresDelimiters($val)
+				? new Node\StringNode($val, $this->indentation)
+				: new Node\LiteralNode($val);
 
 		} else {
 			return new Node\LiteralNode($val);
@@ -75,8 +77,8 @@ final class Encoder
 	}
 
 
-	/** @return Node\ArrayItemNode[] */
-	private function arrayToNodes($val, bool $blockMode = false): array
+	/** @return list<Node\ArrayItemNode> */
+	private function arrayToNodes(mixed $val, bool $blockMode = false): array
 	{
 		$res = [];
 		$counter = 0;

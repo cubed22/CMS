@@ -1,28 +1,24 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Nette\Neon\Node;
 
 use Nette\Neon;
 use Nette\Neon\Node;
+use function array_map, implode;
 
 
 /** @internal */
 final class EntityChainNode extends Node
 {
-	/** @var EntityNode[] */
-	public $chain = [];
-
-
-	public function __construct(array $chain = [])
-	{
-		$this->chain = $chain;
+	public function __construct(
+		/** @var list<EntityNode> */
+		public array $chain = [],
+	) {
 	}
 
 
@@ -39,7 +35,7 @@ final class EntityChainNode extends Node
 
 	public function toString(): string
 	{
-		return implode('', array_map(function ($entity) { return $entity->toString(); }, $this->chain));
+		return implode('', array_map(fn($entity) => $entity->toString(), $this->chain));
 	}
 
 
@@ -48,5 +44,6 @@ final class EntityChainNode extends Node
 		foreach ($this->chain as &$item) {
 			yield $item;
 		}
+		$this->chain = array_values(array_filter($this->chain));
 	}
 }

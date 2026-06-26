@@ -14,39 +14,24 @@ use Nette\Utils\Type;
 
 
 /**
- * Class property description.
- *
- * @property mixed $value
+ * Definition of a class property.
  */
 final class Property
 {
-	use Nette\SmartObject;
 	use Traits\NameAware;
-	use Traits\VisibilityAware;
+	use Traits\PropertyLike;
 	use Traits\CommentAware;
 	use Traits\AttributeAware;
 
-	/** @var mixed */
-	private $value;
-
-	/** @var bool */
-	private $static = false;
-
-	/** @var string|null */
-	private $type;
-
-	/** @var bool */
-	private $nullable = false;
-
-	/** @var bool */
-	private $initialized = false;
-
-	/** @var bool */
-	private $readOnly = false;
+	private mixed $value = null;
+	private bool $static = false;
+	private ?string $type = null;
+	private bool $nullable = false;
+	private bool $initialized = false;
+	private bool $abstract = false;
 
 
-	/** @return static */
-	public function setValue($val): self
+	public function setValue(mixed $val): static
 	{
 		$this->value = $val;
 		$this->initialized = true;
@@ -54,14 +39,13 @@ final class Property
 	}
 
 
-	public function &getValue()
+	public function &getValue(): mixed
 	{
 		return $this->value;
 	}
 
 
-	/** @return static */
-	public function setStatic(bool $state = true): self
+	public function setStatic(bool $state = true): static
 	{
 		$this->static = $state;
 		return $this;
@@ -74,18 +58,15 @@ final class Property
 	}
 
 
-	/** @return static */
-	public function setType(?string $type): self
+	public function setType(?string $type): static
 	{
 		$this->type = Helpers::validateType($type, $this->nullable);
 		return $this;
 	}
 
 
-	/**
-	 * @return Type|string|null
-	 */
-	public function getType(bool $asObject = false)
+	/** @return ($asObject is true ? ?Type : ?string) */
+	public function getType(bool $asObject = false): Type|string|null
 	{
 		return $asObject && $this->type
 			? Type::fromString($this->type)
@@ -93,8 +74,7 @@ final class Property
 	}
 
 
-	/** @return static */
-	public function setNullable(bool $state = true): self
+	public function setNullable(bool $state = true): static
 	{
 		$this->nullable = $state;
 		return $this;
@@ -103,12 +83,11 @@ final class Property
 
 	public function isNullable(): bool
 	{
-		return $this->nullable;
+		return $this->nullable || ($this->initialized && $this->value === null);
 	}
 
 
-	/** @return static */
-	public function setInitialized(bool $state = true): self
+	public function setInitialized(bool $state = true): static
 	{
 		$this->initialized = $state;
 		return $this;
@@ -121,17 +100,16 @@ final class Property
 	}
 
 
-	/** @return static */
-	public function setReadOnly(bool $state = true): self
+	public function setAbstract(bool $state = true): static
 	{
-		$this->readOnly = $state;
+		$this->abstract = $state;
 		return $this;
 	}
 
 
-	public function isReadOnly(): bool
+	public function isAbstract(): bool
 	{
-		return $this->readOnly;
+		return $this->abstract;
 	}
 
 
@@ -140,6 +118,21 @@ final class Property
 	{
 		if ($this->readOnly && !$this->type) {
 			throw new Nette\InvalidStateException("Property \$$this->name: Read-only properties are only supported on typed property.");
+
+		} elseif ($this->abstract && $this->final) {
+			throw new Nette\InvalidStateException("Property \$$this->name cannot be abstract and final at the same time.");
+
+		} elseif (
+			$this->abstract
+			&& !Nette\Utils\Arrays::some($this->getHooks(), fn($hook) => $hook->isAbstract())
+		) {
+			throw new Nette\InvalidStateException("Property \$$this->name: Abstract property must have at least one abstract hook.");
 		}
+	}
+
+
+	public function __clone(): void
+	{
+		$this->hooks = array_map(fn($item) => $item ? clone $item : $item, $this->hooks);
 	}
 }

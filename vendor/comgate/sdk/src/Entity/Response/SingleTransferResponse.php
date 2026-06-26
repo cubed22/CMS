@@ -7,22 +7,20 @@ use Comgate\SDK\Entity\Transfer;
 use Comgate\SDK\Exception\Api\MissingParamException;
 use Comgate\SDK\Exception\ApiException;
 use Comgate\SDK\Http\Response;
-use GuzzleHttp\Psr7\Query;
+use Comgate\SDK\Http\Query;
 
 class SingleTransferResponse
 {
-    /**
-     * 
-     * @var array<string, int|string>
-     */
-	protected array $paymentsList = [];
+	/**
+	 * @var array<int, PaymentInfo>
+	 */
+	protected $paymentsList = [];
 
 	/**
 	 * @param Response $singleTransferResponse
 	 */
 	public function __construct(Response $singleTransferResponse)
 	{
-		$paymentsListJson = $singleTransferResponse->getContent();
 		$paymentsInfoList = json_decode($singleTransferResponse->getContent(), true);
 
 
@@ -33,18 +31,17 @@ class SingleTransferResponse
 	}
 
 	/**
-	 * @return array<string, int|string>
+	 * @return array<int, PaymentInfo>
 	 */
 	public function getPaymentsList(): array
 	{
 		return $this->paymentsList;
 	}
 
-        /**
-         * 
-         * @param array<string, int|string> $paymentsList
-         * @return self
-         */
+	/**
+	 * @param array<int, PaymentInfo> $paymentsList
+	 * @return SingleTransferResponse
+	 */
 	public function setPaymentsList(array $paymentsList): self
 	{
 		$this->paymentsList = $paymentsList;

@@ -2,18 +2,19 @@
 
 namespace Comgate\SDK\Entity\Request;
 
+/**
+ * The class allows switching the state of a test payment on the payment gateway.
+ */
 class SimulationRequest implements IRequest
 {
-        /**
-         * 
-         * @var array<string, int|string>
-         */
-	protected array $params = [];
+	/**
+	 * @var array<string, string> $params
+	 */
+	protected $params = [];
 
-        /**
-         * 
-         * @param array<string, int|string> $params
-         */
+	/**
+	 * @param array<string, string> $params
+	 */
 	public function __construct(array $params)
 	{
 		$this->setParams($params);
@@ -21,20 +22,19 @@ class SimulationRequest implements IRequest
 
 	public function getUrn(): string
 	{
-		return 'simulation';
+		return 'simulation.json';
 	}
 
-        /**
-         * 
-         * @return array<string, int|string>
-         */
+	/**
+	 * @return array<string, string>
+	 */
 	public function toArray(): array
 	{
 		return $this->getParams();
 	}
 
 	/**
-	 * @return array<string, int|string>
+	 * @return array<string, string>
 	 */
 	public function getParams(): array
 	{
@@ -42,7 +42,7 @@ class SimulationRequest implements IRequest
 	}
 
 	/**
-	 * @param array<string, int|string> $params
+	 * @param array<string, string> $params
 	 * @return SimulationRequest
 	 */
 	public function setParams(array $params): SimulationRequest

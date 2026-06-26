@@ -5,16 +5,21 @@ namespace Comgate\SDK\Entity\Response;
 use Comgate\SDK\Exception\Api\MissingParamException;
 use Comgate\SDK\Exception\ApiException;
 use Comgate\SDK\Http\Response;
-use GuzzleHttp\Psr7\Query;
 
 class RecurringPaymentResponse
 {
-
-	protected int $code;
-
-	protected string $message;
-
-	protected string $transId;
+	/**
+	 * @var int
+	 */
+	protected $code;
+	/**
+	 * @var string
+	 */
+	protected $message;
+	/**
+	 * @var string
+	 */
+	protected $transId;
 
 	/**
 	 * @param Response $recurringPaymentResponse
@@ -23,7 +28,7 @@ class RecurringPaymentResponse
 	 */
 	public function __construct(Response $recurringPaymentResponse)
 	{
-		$parsedResponse = Query::parse($recurringPaymentResponse->getContent());
+		$parsedResponse = json_decode($recurringPaymentResponse->getContent(), true);
 
 		$code = (int) $parsedResponse['code'];
 		$message = $parsedResponse['message'];
@@ -45,7 +50,7 @@ class RecurringPaymentResponse
 	}
 
         /**
-         * 
+         *
          * @return array<string, int|string>
          */
 	public function toArray(): array

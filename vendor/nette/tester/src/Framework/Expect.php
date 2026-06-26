@@ -1,17 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function implode, is_string, lcfirst, preg_match;
 
 
 /**
- * Expectations for more complex assertions formulation.
+ * Builds a chain of Assert constraints to use inside Assert::equal() for partial value matching.
  *
  * @method static self same($expected)
  * @method static self notSame($expected)
@@ -49,10 +49,11 @@ namespace Tester;
  */
 class Expect
 {
-	/** @var array of self|\Closure|\stdClass */
-	private $constraints = [];
+	/** @var list<self|(callable(mixed): bool)|\stdClass> */
+	private array $constraints = [];
 
 
+	/** @param mixed[]  $args */
 	public static function __callStatic(string $method, array $args): self
 	{
 		$me = new self;
@@ -61,12 +62,14 @@ class Expect
 	}
 
 
-	public static function that(callable $constraint): self
+	/** @param (callable(mixed): bool)|self  $constraint  returns false to indicate failure */
+	public static function that(callable|self $constraint): self
 	{
 		return (new self)->and($constraint);
 	}
 
 
+	/** @param mixed[]  $args */
 	public function __call(string $method, array $args): self
 	{
 		if (preg_match('#^and([A-Z]\w+)#', $method, $m)) {
@@ -78,7 +81,8 @@ class Expect
 	}
 
 
-	public function and(callable $constraint): self
+	/** @param (callable(mixed): bool)|self  $constraint  returns false to indicate failure */
+	public function and(callable|self $constraint): self
 	{
 		$this->constraints[] = $constraint;
 		return $this;
@@ -88,7 +92,7 @@ class Expect
 	/**
 	 * Checks the expectations.
 	 */
-	public function __invoke($actual): void
+	public function __invoke(mixed $actual): void
 	{
 		foreach ($this->constraints as $cstr) {
 			if ($cstr instanceof \stdClass) {

@@ -1,11 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
-
-declare(strict_types=1);
 
 namespace Nette\Neon;
 
@@ -16,17 +14,15 @@ namespace Nette\Neon;
  */
 final class Decoder
 {
-	/**
-	 * Decodes a NEON string.
-	 * @return mixed
-	 */
-	public function decode(string $input)
+	/** Parses a NEON string and returns the corresponding PHP value. */
+	public function decode(string $input): mixed
 	{
 		$node = $this->parseToNode($input);
 		return $node->toValue();
 	}
 
 
+	/** Parses a NEON string and returns the root AST node. */
 	public function parseToNode(string $input): Node
 	{
 		$lexer = new Lexer;

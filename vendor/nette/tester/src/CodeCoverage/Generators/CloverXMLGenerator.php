@@ -1,22 +1,23 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\CodeCoverage\Generators;
 
 use DOMDocument;
 use DOMElement;
 use Tester\CodeCoverage\PhpParser;
+use Tester\Helpers;
+use function count;
 
 
 class CloverXMLGenerator extends AbstractGenerator
 {
-	private static $metricAttributesMap = [
+	/** @var array<string, string>  metric name => XML attribute name */
+	private static array $metricAttributesMap = [
 		'packageCount' => 'packages',
 		'fileCount' => 'files',
 		'linesOfCode' => 'loc',
@@ -82,7 +83,7 @@ class CloverXMLGenerator extends AbstractGenerator
 
 			if (empty($this->data[$file])) {
 				$coverageData = null;
-				$this->totalSum += count(file($file, FILE_SKIP_EMPTY_LINES));
+				$this->totalSum += count(file($file, FILE_SKIP_EMPTY_LINES) ?: []);
 			} else {
 				$coverageData = $this->data[$file];
 			}
@@ -93,7 +94,7 @@ class CloverXMLGenerator extends AbstractGenerator
 			$elFileMetrics = $elFile->appendChild($doc->createElement('metrics'));
 
 			try {
-				$code = $parser->parse(file_get_contents($file));
+				$code = $parser->parse(Helpers::readFile($file));
 			} catch (\ParseError $e) {
 				throw new \ParseError($e->getMessage() . ' in file ' . $file);
 			}
@@ -131,7 +132,7 @@ class CloverXMLGenerator extends AbstractGenerator
 
 
 			foreach ((array) $coverageData as $line => $count) {
-				if ($count === self::CODE_DEAD) {
+				if ($count === self::LineDead) {
 					continue;
 				}
 
@@ -155,6 +156,7 @@ class CloverXMLGenerator extends AbstractGenerator
 	}
 
 
+	/** @param ?array<int, int>  $coverageData  line number => coverage count */
 	private function calculateClassMetrics(\stdClass $info, ?array $coverageData = null): \stdClass
 	{
 		$stats = (object) [
@@ -186,16 +188,20 @@ class CloverXMLGenerator extends AbstractGenerator
 	}
 
 
+	/**
+	 * @param  ?array<int, int>  $coverageData  line number => coverage count
+	 * @return array{int, int}   [line count, covered line count]
+	 */
 	private static function analyzeMethod(\stdClass $info, ?array $coverageData = null): array
 	{
 		$count = 0;
 		$coveredCount = 0;
 
 		if ($coverageData === null) { // Never loaded file
-			$count = max(1, $info->end - $info->start - 2);
+			$count = (int) max(1, $info->end - $info->start - 2);
 		} else {
 			for ($i = $info->start; $i <= $info->end; $i++) {
-				if (isset($coverageData[$i]) && $coverageData[$i] !== self::CODE_DEAD) {
+				if (isset($coverageData[$i]) && $coverageData[$i] !== self::LineDead) {
 					$count++;
 					if ($coverageData[$i] > 0) {
 						$coveredCount++;
@@ -210,7 +216,7 @@ class CloverXMLGenerator extends AbstractGenerator
 
 	private static function appendMetrics(\stdClass $summary, \stdClass $add): void
 	{
-		foreach ($add as $name => $value) {
+		foreach (get_object_vars($add) as $name => $value) {
 			$summary->{$name} += $value;
 		}
 	}
@@ -218,7 +224,7 @@ class CloverXMLGenerator extends AbstractGenerator
 
 	private static function setMetricAttributes(DOMElement $element, \stdClass $metrics): void
 	{
-		foreach ($metrics as $name => $value) {
+		foreach (get_object_vars($metrics) as $name => $value) {
 			$element->setAttribute(self::$metricAttributesMap[$name], (string) $value);
 		}
 	}

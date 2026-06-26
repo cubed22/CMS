@@ -7,24 +7,38 @@ use DateTimeInterface;
 
 class Transfer
 {
-	protected int $transferId; // int(1444754)
-	protected DateTimeInterface $transferDate; // string(10) "2023-02-07"
-	protected string $accountCounterparty; // string(6) "0/0000"
-	protected string $accountOutgoing; // string(6) "1/0000"
-	protected string $variableSymbol; // string(10) "0123456789"
-        
-        /**
-         * 
-         * @param array<string> $transferData
-         * @return Transfer
-         */
-	public function fromArray(array $transferData): Transfer
-        {
-		$this   ->setTransferId((int) $transferData['transferId'])
-			->setTransferDate(new DateTime($transferData['transferDate']))
-			->setAccountCounterparty($transferData['accountCounterparty'])
-			->setAccountOutgoing($transferData['accountOutgoing'])
-			->setVariableSymbol($transferData['variableSymbol']);
+	/**
+	 * @var int
+	 */
+	protected $transferId; // int(1444754)
+	/**
+	 * @var DateTimeInterface
+	 */
+	protected $transferDate; // string(10) "2023-02-07"
+	/**
+	 * @var string
+	 */
+	protected $accountCounterparty; // string(6) "0/0000"
+	/**
+	 * @var string
+	 */
+	protected $accountOutgoing; // string(6) "1/0000"
+	/**
+	 * @var string
+	 */
+	protected $variableSymbol; // string(10) "0123456789"
+
+	/**
+	 * @param array<string, string|int> $transferData
+	 * @return $this
+	 * @throws \Exception
+	 */
+	public function fromArray(array $transferData){
+		$this->setTransferId((int) $transferData['transferId'])
+			->setTransferDate(new DateTime((string) $transferData['transferDate']))
+			->setAccountCounterparty((string) $transferData['accountCounterparty'])
+			->setAccountOutgoing((string) $transferData['accountOutgoing'])
+			->setVariableSymbol((string) $transferData['variableSymbol']);
 
 		return $this;
 	}

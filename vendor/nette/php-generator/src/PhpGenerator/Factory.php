@@ -11,53 +11,58 @@ namespace Nette\PhpGenerator;
 
 use Nette;
 use Nette\Utils\Reflection;
+use function array_diff, array_filter, array_key_exists, array_map, count, explode, file_get_contents, implode, is_object, is_subclass_of, method_exists, reset;
+use const PHP_VERSION_ID;
 
 
 /**
- * Creates a representation based on reflection.
+ * Creates a representations based on reflection or source code.
  */
 final class Factory
 {
-	use Nette\SmartObject;
+	/** @var string[][]  */
+	private array $bodyCache = [];
 
-	private $bodyCache = [];
-	private $extractorCache = [];
+	/** @var Extractor[]  */
+	private array $extractorCache = [];
 
 
+	/** @param  \ReflectionClass<object>  $from */
 	public function fromClassReflection(
 		\ReflectionClass $from,
 		bool $withBodies = false,
-		bool $materializeTraits = true
-	): ClassType {
-		if ($withBodies && $from->isAnonymous()) {
-			throw new Nette\NotSupportedException('The $withBodies parameter cannot be used for anonymous functions.');
+	): ClassLike
+	{
+		if ($withBodies && ($from->isAnonymous() || $from->isInternal() || $from->isInterface())) {
+			throw new Nette\NotSupportedException('The $withBodies parameter cannot be used for anonymous or internal classes or interfaces.');
 		}
 
-		$class = $from->isAnonymous()
-			? new ClassType
-			: new ClassType($from->getShortName(), new PhpNamespace($from->getNamespaceName()));
-
+		$enumIface = null;
 		if (PHP_VERSION_ID >= 80100 && $from->isEnum()) {
-			$class->setType($class::TYPE_ENUM);
+			$class = new EnumType($from->getShortName(), new PhpNamespace($from->getNamespaceName()));
 			$from = new \ReflectionEnum($from->getName());
 			$enumIface = $from->isBacked() ? \BackedEnum::class : \UnitEnum::class;
+		} elseif ($from->isAnonymous()) {
+			$class = new ClassType;
+		} elseif ($from->isInterface()) {
+			$class = new InterfaceType($from->getShortName(), new PhpNamespace($from->getNamespaceName()));
+		} elseif ($from->isTrait()) {
+			$class = new TraitType($from->getShortName(), new PhpNamespace($from->getNamespaceName()));
 		} else {
-			$class->setType($from->isInterface() ? $class::TYPE_INTERFACE : ($from->isTrait() ? $class::TYPE_TRAIT : $class::TYPE_CLASS));
+			$class = new ClassType($from->getShortName(), new PhpNamespace($from->getNamespaceName()));
 			$class->setFinal($from->isFinal() && $class->isClass());
 			$class->setAbstract($from->isAbstract() && $class->isClass());
-			$enumIface = null;
+			$class->setReadOnly(PHP_VERSION_ID >= 80200 && $from->isReadOnly());
 		}
 
 		$ifaces = $from->getInterfaceNames();
 		foreach ($ifaces as $iface) {
-			$ifaces = array_filter($ifaces, function (string $item) use ($iface): bool {
-				return !is_subclass_of($iface, $item);
-			});
+			$ifaces = array_filter($ifaces, fn(string $item): bool => !is_subclass_of($iface, $item));
 		}
 
 		if ($from->isInterface()) {
 			$class->setExtends($ifaces);
-		} else {
+		} elseif ($ifaces) {
 			$ifaces = array_diff($ifaces, [$enumIface]);
 			$class->setImplements($ifaces);
 		}
@@ -71,25 +76,31 @@ final class Factory
 
 		$props = [];
 		foreach ($from->getProperties() as $prop) {
-			$declaringClass = $materializeTraits
-				? $prop->getDeclaringClass()
-				: Reflection::getPropertyDeclaringClass($prop);
+			$declaringClass = Reflection::getPropertyDeclaringClass($prop);
 
 			if ($prop->isDefault()
 				&& $declaringClass->name === $from->name
-				&& (PHP_VERSION_ID < 80000 || !$prop->isPromoted())
+				&& !$prop->isPromoted()
 				&& !$class->isEnum()
 			) {
-				$props[] = $this->fromPropertyReflection($prop);
+				$props[] = $p = $this->fromPropertyReflection($prop);
+				if ($withBodies) {
+					$hookBodies ??= $this->getExtractor($declaringClass->getFileName())->extractPropertyHookBodies($declaringClass->name);
+					foreach ($hookBodies[$prop->getName()] ?? [] as $hookType => [$body, $short]) {
+						$p->getHook($hookType)->setBody($body, short: $short);
+					}
+				}
 			}
 		}
 
-		$class->setProperties($props);
+		if ($props) {
+			$class->setProperties($props);
+		}
 
 		$methods = $resolutions = [];
 		foreach ($from->getMethods() as $method) {
-			$realMethod = Reflection::getMethodDeclaringMethod($method);
-			$declaringClass = ($materializeTraits ? $method : $realMethod)->getDeclaringClass();
+			$declaringMethod = Reflection::getMethodDeclaringMethod($method);
+			$declaringClass = $declaringMethod->getDeclaringClass();
 
 			if (
 				$declaringClass->name === $from->name
@@ -97,31 +108,31 @@ final class Factory
 			) {
 				$methods[] = $m = $this->fromMethodReflection($method);
 				if ($withBodies) {
-					$realMethodClass = $realMethod->getDeclaringClass();
-					$bodies = &$this->bodyCache[$realMethodClass->name];
-					$bodies = $bodies ?? $this->getExtractor($realMethodClass)->extractMethodBodies($realMethodClass->name);
-					if (isset($bodies[$realMethod->name])) {
-						$m->setBody($bodies[$realMethod->name]);
+					$bodies = &$this->bodyCache[$declaringClass->name];
+					$bodies ??= $this->getExtractor($declaringClass->getFileName())->extractMethodBodies($declaringClass->name);
+					if (isset($bodies[$declaringMethod->name])) {
+						$m->setBody($bodies[$declaringMethod->name]);
 					}
 				}
 			}
 
-			$modifier = $realMethod->getModifiers() !== $method->getModifiers()
+			$modifier = $declaringMethod->getModifiers() !== $method->getModifiers()
 				? ' ' . $this->getVisibility($method)
 				: null;
-			$alias = $realMethod->name !== $method->name ? ' ' . $method->name : '';
+			$alias = $declaringMethod->name !== $method->name ? ' ' . $method->name : '';
 			if ($modifier || $alias) {
-				$resolutions[] = $realMethod->name . ' as' . $modifier . $alias;
+				$resolutions[] = $declaringMethod->name . ' as' . $modifier . $alias;
 			}
 		}
 
 		$class->setMethods($methods);
 
-		if (!$materializeTraits) {
-			foreach ($from->getTraitNames() as $trait) {
-				$class->addTrait($trait, $resolutions);
-				$resolutions = [];
+		foreach ($from->getTraitNames() as $trait) {
+			$trait = $class->addTrait($trait);
+			foreach ($resolutions as $resolution) {
+				$trait->addResolution($resolution);
 			}
+			$resolutions = [];
 		}
 
 		$consts = $cases = [];
@@ -133,8 +144,12 @@ final class Factory
 			}
 		}
 
-		$class->setConstants($consts);
-		$class->setCases($cases);
+		if ($consts) {
+			$class->setConstants($consts);
+		}
+		if ($cases) {
+			$class->setCases($cases);
+		}
 
 		return $class;
 	}
@@ -149,27 +164,17 @@ final class Factory
 		$method->setVisibility($isInterface ? null : $this->getVisibility($from));
 		$method->setFinal($from->isFinal());
 		$method->setAbstract($from->isAbstract() && !$isInterface);
-		$method->setBody($from->isAbstract() ? null : '');
 		$method->setReturnReference($from->returnsReference());
 		$method->setVariadic($from->isVariadic());
 		$method->setComment(Helpers::unformatDocComment((string) $from->getDocComment()));
 		$method->setAttributes($this->getAttributes($from));
-		if ($from->getReturnType() instanceof \ReflectionNamedType) {
-			$method->setReturnType($from->getReturnType()->getName());
-			$method->setReturnNullable($from->getReturnType()->allowsNull());
-		} elseif (
-			$from->getReturnType() instanceof \ReflectionUnionType
-			|| $from->getReturnType() instanceof \ReflectionIntersectionType
-		) {
-			$method->setReturnType((string) $from->getReturnType());
-		}
+		$method->setReturnType((string) $from->getReturnType());
 
 		return $method;
 	}
 
 
-	/** @return GlobalFunction|Closure */
-	public function fromFunctionReflection(\ReflectionFunction $from, bool $withBody = false)
+	public function fromFunctionReflection(\ReflectionFunction $from, bool $withBody = false): GlobalFunction|Closure
 	{
 		$function = $from->isClosure() ? new Closure : new GlobalFunction($from->name);
 		$function->setParameters(array_map([$this, 'fromParameterReflection'], $from->getParameters()));
@@ -180,30 +185,21 @@ final class Factory
 		}
 
 		$function->setAttributes($this->getAttributes($from));
-		if ($from->getReturnType() instanceof \ReflectionNamedType) {
-			$function->setReturnType($from->getReturnType()->getName());
-			$function->setReturnNullable($from->getReturnType()->allowsNull());
-		} elseif (
-			$from->getReturnType() instanceof \ReflectionUnionType
-			|| $from->getReturnType() instanceof \ReflectionIntersectionType
-		) {
-			$function->setReturnType((string) $from->getReturnType());
-		}
+		$function->setReturnType((string) $from->getReturnType());
 
 		if ($withBody) {
-			if ($from->isClosure()) {
-				throw new Nette\NotSupportedException('The $withBody parameter cannot be used for closures.');
+			if ($from->isClosure() || $from->isInternal()) {
+				throw new Nette\NotSupportedException('The $withBody parameter cannot be used for closures or internal functions.');
 			}
 
-			$function->setBody($this->getExtractor($from)->extractFunctionBody($from->name));
+			$function->setBody($this->getExtractor($from->getFileName())->extractFunctionBody($from->name));
 		}
 
 		return $function;
 	}
 
 
-	/** @return Method|GlobalFunction|Closure */
-	public function fromCallable(callable $from)
+	public function fromCallable(callable $from): Method|GlobalFunction|Closure
 	{
 		$ref = Nette\Utils\Callback::toReflection($from);
 		return $ref instanceof \ReflectionMethod
@@ -214,19 +210,18 @@ final class Factory
 
 	public function fromParameterReflection(\ReflectionParameter $from): Parameter
 	{
-		$param = PHP_VERSION_ID >= 80000 && $from->isPromoted()
-			? new PromotedParameter($from->name)
-			: new Parameter($from->name);
-		$param->setReference($from->isPassedByReference());
-		if ($from->getType() instanceof \ReflectionNamedType) {
-			$param->setType($from->getType()->getName());
-			$param->setNullable($from->getType()->allowsNull());
-		} elseif (
-			$from->getType() instanceof \ReflectionUnionType
-			|| $from->getType() instanceof \ReflectionIntersectionType
-		) {
-			$param->setType((string) $from->getType());
+		if ($from->isPromoted()) {
+			$property = $from->getDeclaringClass()->getProperty($from->name);
+			$param = (new PromotedParameter($from->name))
+				->setVisibility($this->getVisibility($property))
+				->setReadOnly(PHP_VERSION_ID >= 80100 && $property->isReadonly())
+				->setFinal(PHP_VERSION_ID >= 80500 && $property->isFinal() && !$property->isPrivateSet());
+			$this->addHooks($property, $param);
+		} else {
+			$param = new Parameter($from->name);
 		}
+		$param->setReference($from->isPassedByReference());
+		$param->setType((string) $from->getType());
 
 		if ($from->isDefaultValueAvailable()) {
 			if ($from->isDefaultValueConstant()) {
@@ -241,8 +236,6 @@ final class Factory
 			} else {
 				$param->setDefaultValue($from->getDefaultValue());
 			}
-
-			$param->setNullable($param->isNullable() && $param->getDefaultValue() !== null);
 		}
 
 		$param->setAttributes($this->getAttributes($from));
@@ -255,7 +248,7 @@ final class Factory
 		$const = new Constant($from->name);
 		$const->setValue($from->getValue());
 		$const->setVisibility($this->getVisibility($from));
-		$const->setFinal(PHP_VERSION_ID >= 80100 ? $from->isFinal() : false);
+		$const->setFinal(PHP_VERSION_ID >= 80100 && $from->isFinal());
 		$const->setComment(Helpers::unformatDocComment((string) $from->getDocComment()));
 		$const->setAttributes($this->getAttributes($from));
 		return $const;
@@ -279,43 +272,69 @@ final class Factory
 		$prop->setValue($defaults[$prop->getName()] ?? null);
 		$prop->setStatic($from->isStatic());
 		$prop->setVisibility($this->getVisibility($from));
-		if (PHP_VERSION_ID >= 70400) {
-			if ($from->getType() instanceof \ReflectionNamedType) {
-				$prop->setType($from->getType()->getName());
-				$prop->setNullable($from->getType()->allowsNull());
-			} elseif (
-				$from->getType() instanceof \ReflectionUnionType
-				|| $from->getType() instanceof \ReflectionIntersectionType
-			) {
-				$prop->setType((string) $from->getType());
-			}
-
-			$prop->setInitialized($from->hasType() && array_key_exists($prop->getName(), $defaults));
-			$prop->setReadOnly(PHP_VERSION_ID >= 80100 ? $from->isReadOnly() : false);
-		} else {
-			$prop->setInitialized(false);
-		}
-
+		$prop->setType((string) $from->getType());
+		$prop->setInitialized($from->hasType() && array_key_exists($prop->getName(), $defaults));
+		$prop->setReadOnly(PHP_VERSION_ID >= 80100 && $from->isReadOnly());
 		$prop->setComment(Helpers::unformatDocComment((string) $from->getDocComment()));
 		$prop->setAttributes($this->getAttributes($from));
+
+		if (PHP_VERSION_ID >= 80400) {
+			$this->addHooks($from, $prop);
+			$isInterface = $from->getDeclaringClass()->isInterface();
+			$prop->setFinal($from->isFinal() && !$prop->isPrivate(PropertyAccessMode::Set));
+			$prop->setAbstract($from->isAbstract() && !$isInterface);
+		}
 		return $prop;
+	}
+
+
+	private function addHooks(\ReflectionProperty $from, Property|PromotedParameter $prop): void
+	{
+		if (PHP_VERSION_ID < 80400) {
+			return;
+		}
+
+		$getV = $this->getVisibility($from);
+		$setV = $from->isPrivateSet()
+			? Visibility::Private
+			: ($from->isProtectedSet() ? Visibility::Protected : $getV);
+		$defaultSetV = $from->isReadOnly() && $getV !== Visibility::Private
+			? Visibility::Protected
+			: $getV;
+		if ($setV !== $defaultSetV) {
+			$prop->setVisibility($getV === Visibility::Public ? null : $getV, $setV);
+		}
+
+		foreach ($from->getHooks() as $type => $hook) {
+			$params = $hook->getParameters();
+			if (
+				count($params) === 1
+				&& $params[0]->getName() === 'value'
+				&& $params[0]->getType() == $from->getType() // intentionally ==
+			) {
+				$params = [];
+			}
+			$prop->addHook($type)
+				->setParameters(array_map([$this, 'fromParameterReflection'], $params))
+				->setAbstract($hook->isAbstract())
+				->setFinal($hook->isFinal())
+				->setReturnReference($hook->returnsReference())
+				->setComment(Helpers::unformatDocComment((string) $hook->getDocComment()))
+				->setAttributes($this->getAttributes($hook));
+		}
 	}
 
 
 	public function fromObject(object $obj): Literal
 	{
-		return new Literal('new \\' . get_class($obj) . '(/* unknown */)');
+		return new Literal('new \\' . $obj::class . '(/* unknown */)');
 	}
 
 
-	public function fromClassCode(string $code): ClassType
+	public function fromClassCode(string $code): ClassLike
 	{
 		$classes = $this->fromCode($code)->getClasses();
-		if (!$classes) {
-			throw new Nette\InvalidStateException('The code does not contain any class.');
-		}
-
-		return reset($classes);
+		return reset($classes) ?: throw new Nette\InvalidStateException('The code does not contain any class.');
 	}
 
 
@@ -326,12 +345,9 @@ final class Factory
 	}
 
 
+	/** @return Attribute[] */
 	private function getAttributes($from): array
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return [];
-		}
-
 		return array_map(function ($attr) {
 			$args = $attr->getArguments();
 			foreach ($args as &$arg) {
@@ -345,24 +361,18 @@ final class Factory
 	}
 
 
-	private function getVisibility($from): string
+	private function getVisibility(\ReflectionProperty|\ReflectionMethod|\ReflectionClassConstant $from): string
 	{
 		return $from->isPrivate()
-			? ClassType::VisibilityPrivate
-			: ($from->isProtected() ? ClassType::VisibilityProtected : ClassType::VisibilityPublic);
+			? Visibility::Private
+			: ($from->isProtected() ? Visibility::Protected : Visibility::Public);
 	}
 
 
-	private function getExtractor($from): Extractor
+	private function getExtractor(string $file): Extractor
 	{
-		$file = $from->getFileName();
 		$cache = &$this->extractorCache[$file];
-		if ($cache !== null) {
-			return $cache;
-		} elseif (!$file) {
-			throw new Nette\InvalidStateException("Source code of $from->name not found.");
-		}
-
-		return new Extractor(file_get_contents($file));
+		$cache ??= new Extractor(file_get_contents($file));
+		return $cache;
 	}
 }

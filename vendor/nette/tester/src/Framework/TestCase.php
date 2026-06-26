@@ -1,17 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function count, func_get_args, func_num_args, is_array, is_string, sprintf;
 
 
 /**
- * Single test case.
+ * Base class for xUnit-style test cases with setUp/tearDown hooks and data provider support.
  */
 class TestCase
 {
@@ -20,15 +20,14 @@ class TestCase
 		ListMethods = 'nette-tester-list-methods',
 		MethodPattern = '#^test[A-Z0-9_]#';
 
-	/** @var bool */
-	private $handleErrors = false;
+	private bool $handleErrors = false;
 
-	/** @var callable|false|null */
+	/** @var (callable(int, string, string, int): bool)|false|null */
 	private $prevErrorHandler = false;
 
 
 	/**
-	 * Runs the test case.
+	 * Runs all test methods in this test case or a specific test method if provided.
 	 */
 	public function run(): void
 	{
@@ -36,11 +35,14 @@ class TestCase
 			throw new \LogicException('Calling TestCase::run($method) is deprecated. Use TestCase::runTest($method) instead.');
 		}
 
-		$methods = array_values(preg_grep(self::MethodPattern, array_map(function (\ReflectionMethod $rm): string {
-			return $rm->getName();
-		}, (new \ReflectionObject($this))->getMethods())));
+		$methods = array_values(preg_grep(
+			self::MethodPattern,
+			array_map(fn(\ReflectionMethod $rm): string => $rm->getName(), (new \ReflectionObject($this))->getMethods()),
+		));
 
-		if (isset($_SERVER['argv']) && ($tmp = preg_filter('#--method=([\w-]+)$#Ai', '$1', $_SERVER['argv']))) {
+		/** @var list<string> $argv */
+		$argv = $_SERVER['argv'] ?? [];
+		if ($argv && ($tmp = preg_filter('#--method=([\w-]+)$#Ai', '$1', $argv))) {
 			$method = reset($tmp);
 			if ($method === self::ListMethods) {
 				$this->sendMethodList($methods);
@@ -56,8 +58,12 @@ class TestCase
 			foreach ($methods as $method) {
 				try {
 					$this->runTest($method);
+					Environment::print(Ansi::colorize('√', 'lime') . " $method");
 				} catch (TestCaseSkippedException $e) {
-					echo "\nSkipped:\n{$e->getMessage()}\n";
+					Environment::print("s $method {$e->getMessage()}");
+				} catch (\Throwable $e) {
+					Environment::print(Ansi::colorize('×', 'red') . " $method\n\n");
+					throw $e;
 				}
 			}
 		}
@@ -65,8 +71,8 @@ class TestCase
 
 
 	/**
-	 * Runs the test method.
-	 * @param  array  $args  test method parameters (dataprovider bypass)
+	 * Runs a single test method, resolving data providers and handling errors.
+	 * @param  ?array<string, mixed>  $args  if provided, bypasses data provider and uses these arguments directly
 	 */
 	public function runTest(string $method, ?array $args = null): void
 	{
@@ -96,7 +102,7 @@ class TestCase
 			: [$args];
 
 		if ($this->prevErrorHandler === false) {
-			$this->prevErrorHandler = set_error_handler(function (int $severity): ?bool {
+			$this->prevErrorHandler = set_error_handler(function (int $severity): bool {
 				if ($this->handleErrors && ($severity & error_reporting()) === $severity) {
 					$this->handleErrors = false;
 					$this->silentTearDown();
@@ -141,30 +147,27 @@ class TestCase
 					$e->origMessage,
 					$method->getName(),
 					substr(Dumper::toLine($params), 1, -1),
-					is_string($k) ? (" (data set '" . explode('-', $k, 2)[1] . "')") : ''
+					is_string($k) ? (" (data set '" . explode('-', $k, 2)[1] . "')") : '',
 				));
 			}
 		}
 	}
 
 
-	/**
-	 * @return mixed
-	 */
-	protected function getData(string $provider)
+	protected function getData(string $provider): mixed
 	{
-		if (strpos($provider, '.') === false) {
+		if (!str_contains($provider, '.')) {
 			return $this->$provider();
 		} else {
 			$rc = new \ReflectionClass($this);
-			[$file, $query] = DataProvider::parseAnnotation($provider, $rc->getFileName());
+			[$file, $query] = DataProvider::parseAnnotation($provider, (string) $rc->getFileName());
 			return DataProvider::load($file, $query);
 		}
 	}
 
 
 	/**
-	 * This method is called before a test is executed.
+	 * Setup logic to be executed before each test method. Override in subclasses for specific behaviors.
 	 * @return void
 	 */
 	protected function setUp()
@@ -173,7 +176,7 @@ class TestCase
 
 
 	/**
-	 * This method is called after a test is executed.
+	 * Teardown logic to be executed after each test method. Override in subclasses to release resources.
 	 * @return void
 	 */
 	protected function tearDown()
@@ -181,12 +184,15 @@ class TestCase
 	}
 
 
+	/**
+	 * Runs tearDown() while suppressing all errors and exceptions.
+	 */
 	private function silentTearDown(): void
 	{
-		set_error_handler(function () {});
+		set_error_handler(fn() => true);
 		try {
 			$this->tearDown();
-		} catch (\Throwable $e) {
+		} catch (\Throwable) {
 		}
 
 		restore_error_handler();
@@ -194,7 +200,7 @@ class TestCase
 
 
 	/**
-	 * Skips the test.
+	 * Skips the current test with an optional reason message.
 	 */
 	protected function skip(string $message = ''): void
 	{
@@ -202,12 +208,16 @@ class TestCase
 	}
 
 
+	/**
+	 * Prints the list of test methods to stdout for the runner to discover.
+	 * @param string[]  $methods
+	 */
 	private function sendMethodList(array $methods): void
 	{
 		Environment::$checkAssertions = false;
 		header('Content-Type: text/plain');
 		echo "\n";
-		echo 'TestCase:' . static::class . "\n";
+		echo 'TestCase:' . get_debug_type($this) . "\n";
 		echo 'Method:' . implode("\nMethod:", $methods) . "\n";
 
 		$dependentFiles = [];
@@ -229,6 +239,11 @@ class TestCase
 	}
 
 
+	/**
+	 * Builds the list of argument sets for a test method from its data providers.
+	 * @param  string[]  $dataprovider
+	 * @return array<array<string, mixed>>
+	 */
 	private function prepareTestData(\ReflectionMethod $method, array $dataprovider): array
 	{
 		$data = $defaultParams = [];
@@ -247,7 +262,7 @@ class TestCase
 
 			foreach ($res as $k => $set) {
 				if (!is_array($set)) {
-					$type = is_object($set) ? get_class($set) : gettype($set);
+					$type = get_debug_type($set);
 					throw new TestCaseException("Data provider $provider() item '$k' must be an array, $type given.");
 				}
 
@@ -269,12 +284,16 @@ class TestCase
 	}
 }
 
-
+/**
+ * Signals a TestCase configuration or runtime error.
+ */
 class TestCaseException extends \Exception
 {
 }
 
-
+/**
+ * Signals that a test method was skipped.
+ */
 class TestCaseSkippedException extends \Exception
 {
 }

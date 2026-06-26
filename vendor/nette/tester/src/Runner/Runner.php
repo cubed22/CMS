@@ -1,60 +1,47 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner;
 
 use Tester\Environment;
+use Tester\Helpers;
+use function count, in_array;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
- * Test runner.
+ * Discovers tests, schedules parallel jobs, and aggregates results.
  */
 class Runner
 {
-	/** @var string[]  paths to test files/directories */
-	public $paths = [];
+	/** @var list<string>  paths to test files/directories */
+	public array $paths = [];
 
-	/** @var string[] */
-	public $ignoreDirs = ['vendor'];
+	/** @var list<string> */
+	public array $ignoreDirs = ['vendor'];
+	public int $threadCount = 1;
+	public TestHandler $testHandler;
 
-	/** @var int  run in parallel threads */
-	public $threadCount = 1;
+	/** @var list<OutputHandler> */
+	public array $outputHandlers = [];
+	public bool $stopOnFail = false;
+	private PhpInterpreter $interpreter;
 
-	/** @var TestHandler */
-	public $testHandler;
-
-	/** @var OutputHandler[] */
-	public $outputHandlers = [];
-
-	/** @var bool */
-	public $stopOnFail = false;
-
-	/** @var PhpInterpreter */
-	private $interpreter;
-
-	/** @var array */
-	private $envVars = [];
+	/** @var array<string, string>  environment variables for test processes */
+	private array $envVars = [];
 
 	/** @var Job[] */
-	private $jobs;
+	private array $jobs;
+	private bool $interrupted = false;
+	private ?string $tempDir = null;
+	private bool $result;
 
-	/** @var bool */
-	private $interrupted = false;
-
-	/** @var string|null */
-	private $tempDir;
-
-	/** @var bool */
-	private $result;
-
-	/** @var array */
-	private $lastResults = [];
+	/** @var array<string, int>  test signature => result (Test::Prepared|Passed|Failed|Skipped) */
+	private array $lastResults = [];
 
 
 	public function __construct(PhpInterpreter $interpreter)
@@ -70,6 +57,7 @@ class Runner
 	}
 
 
+	/** @return array<string, string> */
 	public function getEnvironmentVariables(): array
 	{
 		return $this->envVars;
@@ -84,17 +72,6 @@ class Runner
 
 	public function setTempDirectory(?string $path): void
 	{
-		if ($path !== null) {
-			if (!is_dir($path) || !is_writable($path)) {
-				throw new \RuntimeException("Path '$path' is not a writable directory.");
-			}
-
-			$path = realpath($path) . DIRECTORY_SEPARATOR . 'Tester';
-			if (!is_dir($path) && @mkdir($path) === false && !is_dir($path)) {  // @ - directory may exist
-				throw new \RuntimeException("Cannot create '$path' directory.");
-			}
-		}
-
 		$this->tempDir = $path;
 		$this->testHandler->setTempDirectory($path);
 	}
@@ -118,9 +95,10 @@ class Runner
 		}
 
 		if ($this->tempDir) {
-			usort($this->jobs, function (Job $a, Job $b): int {
-				return $this->getLastResult($a->getTest()) - $this->getLastResult($b->getTest());
-			});
+			usort(
+				$this->jobs,
+				fn(Job $a, Job $b): int => $this->getLastResult($a->getTest()) - $this->getLastResult($b->getTest()),
+			);
 		}
 
 		$threads = range(1, $this->threadCount);
@@ -131,12 +109,12 @@ class Runner
 			while (($this->jobs || $running) && !$this->interrupted) {
 				while ($threads && $this->jobs) {
 					$running[] = $job = array_shift($this->jobs);
-					$job->setEnvironmentVariable(Environment::THREAD, (string) array_shift($threads));
-					$job->run($async ? $job::RUN_ASYNC : 0);
+					$job->setEnvironmentVariable(Environment::VariableThread, (string) array_shift($threads));
+					$job->run(async: $async);
 				}
 
 				if ($async) {
-					usleep(Job::RUN_USLEEP); // stream_select() doesn't work with proc_open()
+					Job::waitForActivity($running);
 				}
 
 				foreach ($running as $key => $job) {
@@ -145,7 +123,7 @@ class Runner
 					}
 
 					if (!$job->isRunning()) {
-						$threads[] = $job->getEnvironmentVariable(Environment::THREAD);
+						$threads[] = $job->getEnvironmentVariable(Environment::VariableThread);
 						$this->testHandler->assess($job);
 						unset($running[$key]);
 					}
@@ -169,7 +147,7 @@ class Runner
 
 		if (is_dir($path)) {
 			foreach (glob(str_replace('[', '[[]', $path) . '/*', GLOB_ONLYDIR) ?: [] as $dir) {
-				if (in_array(basename($dir), $this->ignoreDirs, true)) {
+				if (in_array(basename($dir), $this->ignoreDirs, strict: true)) {
 					continue;
 				}
 
@@ -182,7 +160,7 @@ class Runner
 		} else {
 			foreach (glob(str_replace('[', '[[]', $path)) ?: [] as $file) {
 				if (is_file($file)) {
-					$this->testHandler->initiate(realpath($file));
+					$this->testHandler->initiate(realpath($file) ?: $file);
 				}
 			}
 		}
@@ -207,11 +185,11 @@ class Runner
 
 
 	/**
-	 * Writes to output handlers.
+	 * Notifies all output handlers that a test has finished, updates the result cache, and stops on failure if configured.
 	 */
 	public function finishTest(Test $test): void
 	{
-		$this->result = $this->result && ($test->getResult() !== Test::FAILED);
+		$this->result = $this->result && ($test->getResult() !== Test::Failed);
 
 		foreach ($this->outputHandlers as $handler) {
 			$handler->finish($test);
@@ -224,7 +202,7 @@ class Runner
 			}
 		}
 
-		if ($this->stopOnFail && $test->getResult() === Test::FAILED) {
+		if ($this->stopOnFail && $test->getResult() === Test::Failed) {
 			$this->interrupted = true;
 		}
 	}
@@ -245,10 +223,10 @@ class Runner
 
 		$file = $this->getLastResultFilename($test);
 		if (is_file($file)) {
-			return $this->lastResults[$signature] = (int) file_get_contents($file);
+			return $this->lastResults[$signature] = (int) Helpers::readFile($file);
 		}
 
-		return $this->lastResults[$signature] = Test::PREPARED;
+		return $this->lastResults[$signature] = Test::Prepared;
 	}
 
 

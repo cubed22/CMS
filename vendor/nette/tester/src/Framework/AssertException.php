@@ -1,30 +1,25 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
 
 
 /**
- * Assertion exception.
+ * Carries assertion failure details including the actual and expected values.
  */
 class AssertException extends \Exception
 {
-	public $origMessage;
-
-	public $actual;
-
-	public $expected;
-
-	public $outputName;
+	public string $origMessage;
+	public mixed $actual;
+	public mixed $expected;
+	public ?string $outputName;
 
 
-	public function __construct(string $message, $expected, $actual, ?\Throwable $previous = null)
+	public function __construct(string $message, mixed $expected, mixed $actual, ?\Throwable $previous = null)
 	{
 		parent::__construct('', 0, $previous);
 		$this->expected = $expected;

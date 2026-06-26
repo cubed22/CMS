@@ -1,37 +1,31 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Nette\Neon;
 
 
 /**
+ * Base class for all AST nodes produced by the NEON parser.
+ *
  * @implements \IteratorAggregate<Node>
  */
 abstract class Node implements \IteratorAggregate
 {
-	/** @var ?int */
-	public $startTokenPos;
-
-	/** @var ?int */
-	public $endTokenPos;
-
-	/** @var ?int */
-	public $startLine;
-
-	/** @var ?int */
-	public $endLine;
+	public ?int $startTokenPos = null;
+	public ?int $endTokenPos = null;
+	public ?int $startLine = null;
+	public ?int $endLine = null;
 
 
-	/** @return mixed */
-	abstract public function toValue();
+	/** Converts the node to its PHP value. */
+	abstract public function toValue(): mixed;
 
 
+	/** Converts the node back to its NEON representation. */
 	abstract public function toString(): string;
 
 

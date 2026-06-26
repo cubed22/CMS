@@ -8,7 +8,6 @@ use Stringable;
 
 class FileLogger implements LoggerInterface
 {
-
 	/** @var string */
 	private $file;
 
@@ -20,7 +19,7 @@ class FileLogger implements LoggerInterface
 	/**
 	 * @param mixed $level
 	 * @param string|Stringable $message
-	 * @param mixed[] $context
+	 * @param array<mixed> $context
 	 */
 	public function log($level, $message, array $context = []): void
 	{
@@ -28,10 +27,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function emergency($message, array $context = []): void
 	{
@@ -39,10 +36,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function alert($message, array $context = []): void
 	{
@@ -50,10 +45,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function critical($message, array $context = []): void
 	{
@@ -61,10 +54,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function error($message, array $context = []): void
 	{
@@ -72,10 +63,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function warning($message, array $context = []): void
 	{
@@ -83,10 +72,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function notice($message, array $context = []): void
 	{
@@ -94,10 +81,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function info($message, array $context = []): void
 	{
@@ -105,10 +90,8 @@ class FileLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
-	 * @return void
 	 */
 	public function debug($message, array $context = []): void
 	{

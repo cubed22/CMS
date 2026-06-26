@@ -4,28 +4,96 @@ namespace Comgate\SDK\Entity;
 
 class Method
 {
+	/**
+	 * @var string
+	 */
+	private $id;
+	/**
+	 * @var string
+	 */
+	private $group;
+	/**
+	 * @var string
+	 */
+	private $groupLabel;
+	/**
+	 * @var string
+	 */
+	private $name;
+	/**
+	 * @var string
+	 */
+	private $name_short;
+	/**
+	 * @var string
+	 */
+	private $description;
+	/**
+	 * @var string
+	 */
+	private $logo;
+	/**
+	 * @var string
+	 */
+	private $logo_240;
+	/**
+	 * @var string
+	 */
+	private $cblogo;
+	/**
+	 * @var string
+	 */
+	private $clogo;
+	/**
+	 * @var string
+	 */
+	private $sblogo;
+	/**
+	 * @var string
+	 */
+	private $slogo;
 
-	private string $id;
-
-	private string $name;
-
-	private string $description;
-
-	private string $logo;
-
-        /**
-         * 
-         * @param array<string> $methodData
-         * @return self
-         */
+	/**
+	 * @param array<string, string> $methodData
+	 * @return $this
+	 */
 	public function fromArray(array $methodData): self
 	{
 		$this->setId($methodData['id'])
 			->setName($methodData['name'])
 			->setDescription($methodData['description'])
-			->setLogo($methodData['logo']);
+			->setLogo($methodData['logo'])
+			->setGroup($methodData['group'])
+			->setGroupLabel($methodData['groupLabel'])
+			->setNameShort($methodData['name_short'] ?? '')
+			->setLogo240($methodData['logo_240'] ?? '')
+			->setCblogo($methodData['logo_240c'] ?? '')
+			->setClogo($methodData['logo_120c'] ?? '')
+			->setSblogo($methodData['logo_150s'] ?? '')
+			->setSlogo($methodData['logo_100s'] ?? '');
 
 		return $this;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function toArray(): array
+	{
+		return [
+			'id'          => $this->getId(),
+			'name'        => $this->getName(),
+			'description' => $this->getDescription(),
+			'logo'        => $this->getLogo(),
+			'group'       => $this->getGroup(),
+			'groupLabel'  => $this->getGroupLabel(),
+			'name_short'  => $this->getNameShort(),
+			'logo_240'    => $this->getLogo240(),
+			'cblogo'      => $this->getCblogo(),
+			'clogo'       => $this->getClogo(),
+			'sblogo'      => $this->getSblogo(),
+			'slogo'       => $this->getSlogo(),
+		];
 	}
 
 	/**
@@ -100,4 +168,148 @@ class Method
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getGroup(): string
+	{
+		return $this->group;
+	}
+
+	/**
+	 * @param string $group
+	 * @return $this
+	 */
+	public function setGroup(string $group): Method
+	{
+		$this->group = $group;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getGroupLabel(): string
+	{
+		return $this->groupLabel;
+	}
+
+	/**
+	 * @param string $groupLabel
+	 * @return $this
+	 */
+	public function setGroupLabel(string $groupLabel): Method
+	{
+		$this->groupLabel = $groupLabel;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getNameShort(): string
+	{
+		return $this->name_short;
+	}
+
+	/**
+	 * @param string $name_short
+	 * @return self
+	 */
+	public function setNameShort(string $name_short): self
+	{
+		$this->name_short = $name_short;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLogo240(): string
+	{
+		return $this->logo_240;
+	}
+
+	/**
+	 * @param string $logo_240
+	 * @return self
+	 */
+	public function setLogo240(string $logo_240): self
+	{
+		$this->logo_240 = $logo_240;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getCblogo(): string
+	{
+		return $this->cblogo;
+	}
+
+	/**
+	 * @param string $cblogo
+	 * @return self
+	 */
+	public function setCblogo(string $cblogo): self
+	{
+		$this->cblogo = $cblogo;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getClogo(): string
+	{
+
+		return $this->clogo;
+	}
+
+	/**
+	 * @param string $clogo
+	 * @return self
+	 */
+	public function setClogo(string $clogo): self
+	{
+		$this->clogo = $clogo;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSblogo(): string
+	{
+		return $this->sblogo;
+	}
+
+	/**
+	 * @param string $sblogo
+	 * @return self
+	 */
+	public function setSblogo(string $sblogo): self
+	{
+		$this->sblogo = $sblogo;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSlogo(): string
+	{
+		return $this->slogo;
+	}
+
+	/**
+	 * @param string $slogo
+	 * @return self
+	 */
+	public function setSlogo(string $slogo): self
+	{
+		$this->slogo = $slogo;
+		return $this;
+	}
 }

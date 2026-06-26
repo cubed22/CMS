@@ -20,11 +20,11 @@ class PaymentCancelRequest implements IRequest
 	 */
 	public function getUrn(): string
 	{
-		return 'cancel';
+		return 'payment/transId/' . urlencode($this->getTransId()) . '.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, string>
 	 */
 	public function toArray(): array
 	{

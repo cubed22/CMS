@@ -1,11 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
-
-declare(strict_types=1);
 
 namespace Nette\Neon\Node;
 
@@ -16,17 +14,11 @@ use Nette\Neon\Node;
 /** @internal */
 final class EntityNode extends Node
 {
-	/** @var Node */
-	public $value;
-
-	/** @var ArrayItemNode[] */
-	public $attributes;
-
-
-	public function __construct(Node $value, array $attributes = [])
-	{
-		$this->value = $value;
-		$this->attributes = $attributes;
+	public function __construct(
+		public Node $value,
+		/** @var list<ArrayItemNode> */
+		public array $attributes = [],
+	) {
 	}
 
 
@@ -34,7 +26,7 @@ final class EntityNode extends Node
 	{
 		return new Entity(
 			$this->value->toValue(),
-			ArrayItemNode::itemsToArray($this->attributes)
+			ArrayItemNode::itemsToArray($this->attributes),
 		);
 	}
 
@@ -55,5 +47,6 @@ final class EntityNode extends Node
 		foreach ($this->attributes as &$item) {
 			yield $item;
 		}
+		$this->attributes = array_values(array_filter($this->attributes));
 	}
 }

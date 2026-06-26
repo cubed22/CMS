@@ -8,35 +8,36 @@ use Comgate\SDK\Exception\LogicalException;
 
 class PreauthCaptureRequest implements IRequest
 {
-	private string $transId;
-
-	private Money $amount;
+	/**
+	 * @var string
+	 */
+	private $transId;
+	/**
+	 * @var Money
+	 */
+	private $amount;
 
 	public function __construct(string $transId, Money $amount){
 		$this->setTransId($transId)
 			->setAmount($amount);
 	}
-	
+
 	/**
 	 * @return string
 	 */
 	public function getUrn(): string
 	{
-		return 'capturePreauth';
+		return 'preauth/transId/' . urlencode($this->getTransId()) . '.json';
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return array<string, string|int>
 	 */
 	public function toArray(): array
 	{
-		// Required
-		$output = [
-			'transId' => $this->getTransId(),
+		return [
 			'amount' => $this->getAmount()->get(),
 		];
-
-		return $output;
 	}
 
 	/**

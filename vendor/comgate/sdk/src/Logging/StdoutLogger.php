@@ -11,7 +11,7 @@ class StdoutLogger implements LoggerInterface
 
 	/**
 	 * @param mixed $level
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -22,8 +22,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -33,8 +32,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -44,8 +42,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -55,8 +52,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -66,8 +62,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -77,8 +72,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -88,8 +82,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */
@@ -99,8 +92,7 @@ class StdoutLogger implements LoggerInterface
 	}
 
 	/**
-         * mixed nahradit
-	 * @param $message
+	 * @param string|Stringable $message
 	 * @param array<mixed> $context
 	 * @return void
 	 */

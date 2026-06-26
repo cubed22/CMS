@@ -1,26 +1,42 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function array_slice, count, defined;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
- * Test helpers.
+ * Utility methods for file I/O, path handling, annotation parsing, and shell escaping.
  */
 class Helpers
 {
 	/**
-	 * Purges directory.
+	 * Reads entire file into a string.
+	 * @throws \Exception
+	 */
+	public static function readFile(string $file): string
+	{
+		$content = @file_get_contents($file); // @ is escalated to exception
+		if ($content === false) {
+			throw new \Exception("Unable to read file '$file'.");
+		}
+
+		return $content;
+	}
+
+
+	/**
+	 * Creates directory if it does not exist and deletes all its contents.
 	 */
 	public static function purge(string $dir): void
 	{
-		if (preg_match('#^(\w:)?[/\\\\]?$#', $dir)) {
+		if (preg_match('#^(\w:)?[/\\\]?$#', $dir)) {
 			throw new \InvalidArgumentException('Directory must not be an empty string or root path.');
 		}
 
@@ -39,8 +55,9 @@ class Helpers
 
 
 	/**
-	 * Find common directory for given paths. All files or directories must exist.
-	 * @return string  Empty when not found. Slash and back slash chars normalized to DIRECTORY_SEPARATOR.
+	 * Finds the common ancestor directory of the given paths. All paths must exist.
+	 * @param  string[]  $paths
+	 * @return string  empty string when not found; separators normalized to DIRECTORY_SEPARATOR
 	 * @internal
 	 */
 	public static function findCommonDirectory(array $paths): string
@@ -71,7 +88,8 @@ class Helpers
 
 
 	/**
-	 * Parse phpDoc comment.
+	 * Parses the first docblock in a string into an array of annotation values.
+	 * @return array<string|string[]>  annotation name => value(s)
 	 * @internal
 	 */
 	public static function parseDocComment(string $s): array
@@ -87,13 +105,14 @@ class Helpers
 
 		preg_match_all('#^[ \t\*]*@(\w+)([^\w\r\n].*)?#mi', $content[1], $matches, PREG_SET_ORDER);
 		foreach ($matches as $match) {
-			$ref = &$options[strtolower($match[1])];
-			if (isset($ref)) {
-				$ref = (array) $ref;
-				$ref = &$ref[];
+			$name = strtolower($match[1]);
+			$value = isset($match[2]) ? trim($match[2]) : '';
+			if (isset($options[$name])) {
+				$options[$name] = (array) $options[$name];
+				$options[$name][] = $value;
+			} else {
+				$options[$name] = $value;
 			}
-
-			$ref = isset($match[2]) ? trim($match[2]) : '';
 		}
 
 		return $options;
@@ -105,9 +124,9 @@ class Helpers
 	 */
 	public static function errorTypeToString(int $type): string
 	{
-		$consts = get_defined_constants(true);
+		$consts = get_defined_constants(categorize: true);
 		foreach ($consts['Core'] as $name => $val) {
-			if ($type === $val && substr($name, 0, 2) === 'E_') {
+			if ($type === $val && str_starts_with($name, 'E_')) {
 				return $name;
 			}
 		}
@@ -117,7 +136,7 @@ class Helpers
 
 
 	/**
-	 * Escape a string to be used as a shell argument.
+	 * Escapes a string for safe use as a shell argument.
 	 * @internal
 	 */
 	public static function escapeArg(string $s): string
@@ -129,5 +148,24 @@ class Helpers
 		return defined('PHP_WINDOWS_VERSION_BUILD')
 			? '"' . str_replace('"', '""', $s) . '"'
 			: escapeshellarg($s);
+	}
+
+
+	/**
+	 * @internal
+	 */
+	public static function prepareTempDir(string $path): string
+	{
+		$real = realpath($path);
+		if ($real === false || !is_dir($real) || !is_writable($real)) {
+			throw new \RuntimeException("Path '$real' is not a writable directory.");
+		}
+
+		$path = $real . DIRECTORY_SEPARATOR . 'Tester';
+		if (!is_dir($path) && @mkdir($path) === false && !is_dir($path)) {  // @ - directory may exist
+			throw new \RuntimeException("Cannot create '$path' directory.");
+		}
+
+		return $path;
 	}
 }

@@ -6,14 +6,17 @@ use Comgate\SDK\Exception\Api\MissingParamException;
 use Comgate\SDK\Exception\Api\PreauthException;
 use Comgate\SDK\Exception\ApiException;
 use Comgate\SDK\Http\Response;
-use GuzzleHttp\Psr7\Query;
 
 class RefundResponse
 {
-
-	protected int $code;
-
-	protected string $message;
+	/**
+	 * @var int
+	 */
+	protected $code;
+	/**
+	 * @var string
+	 */
+	protected $message;
 
 	/**
 	 * @param Response $refundResponse
@@ -22,7 +25,7 @@ class RefundResponse
 	 */
 	public function __construct(Response $refundResponse)
 	{
-		$parsedResponse = Query::parse($refundResponse->getContent());
+		$parsedResponse = json_decode($refundResponse->getContent(), true);
 
 		$code = (int) $parsedResponse['code'];
 		$message = $parsedResponse['message'];
@@ -43,7 +46,7 @@ class RefundResponse
 	}
 
         /**
-         * 
+         *
          * @return array<string, int|string>
          */
 	public function toArray(): array

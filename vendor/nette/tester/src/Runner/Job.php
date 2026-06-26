@@ -1,67 +1,55 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner;
 
 use Tester\Helpers;
+use function count, is_array, is_resource;
+use const DIRECTORY_SEPARATOR, PHP_OS_FAMILY, PHP_VERSION_ID;
 
 
 /**
- * Single test job.
+ * Spawns an isolated PHP process for a single test and captures its output and exit code.
  */
 class Job
 {
 	public const
-		CODE_NONE = -1,
-		CODE_OK = 0,
-		CODE_SKIP = 177,
-		CODE_FAIL = 178,
-		CODE_ERROR = 255;
+		CodeNone = -1,
+		CodeOk = 0,
+		CodeSkip = 177,
+		CodeFail = 178,
+		CodeError = 255;
 
 	/** waiting time between process activity check in microseconds */
-	public const RUN_USLEEP = 10000;
+	public const RunSleep = 10000;
 
-	public const
-		RUN_ASYNC = 1,
-		RUN_COLLECT_ERRORS = 2;
-
-	/** @var Test */
-	private $test;
-
-	/** @var PhpInterpreter */
-	private $interpreter;
+	private Test $test;
+	private PhpInterpreter $interpreter;
 
 	/** @var string[]  environment variables for test */
-	private $envVars;
+	private array $envVars;
 
 	/** @var resource|null */
 	private $proc;
 
 	/** @var resource|null */
 	private $stdout;
+	private ?string $stderrFile;
+	private int $exitCode = self::CodeNone;
 
-	/** @var resource|null */
-	private $stderr;
-
-	/** @var int */
-	private $exitCode = self::CODE_NONE;
-
-	/** @var string[]  output headers */
-	private $headers = [];
-
-	/** @var float|null */
-	private $duration;
+	/** @var array<string, string>  output headers */
+	private array $headers = [];
+	private float $duration;
 
 
+	/** @param ?array<string, string>  $envVars */
 	public function __construct(Test $test, PhpInterpreter $interpreter, ?array $envVars = null)
 	{
-		if ($test->getResult() !== Test::PREPARED) {
+		if ($test->hasResult()) {
 			throw new \LogicException("Test '{$test->getSignature()}' already has result '{$test->getResult()}'.");
 		}
 
@@ -71,6 +59,14 @@ class Job
 		$this->test = $test;
 		$this->interpreter = $interpreter;
 		$this->envVars = (array) $envVars;
+	}
+
+
+	public function setTempDirectory(?string $path): void
+	{
+		$this->stderrFile = $path === null
+			? null
+			: $path . DIRECTORY_SEPARATOR . 'Job.pid-' . getmypid() . '.' . uniqid() . '.stderr';
 	}
 
 
@@ -88,56 +84,44 @@ class Job
 
 	/**
 	 * Runs single test.
-	 * @param  int  $flags  self::RUN_ASYNC | self::RUN_COLLECT_ERRORS
 	 */
-	public function run(int $flags = 0): void
+	public function run(bool $async = false): void
 	{
 		foreach ($this->envVars as $name => $value) {
 			putenv("$name=$value");
 		}
 
-		$args = [];
-		foreach ($this->test->getArguments() as $value) {
-			$args[] = is_array($value)
-				? Helpers::escapeArg("--$value[0]=$value[1]")
-				: Helpers::escapeArg($value);
-		}
-
-		$this->duration = -microtime(true);
+		$args = array_map(fn($arg) => is_array($arg) ? "--$arg[0]=$arg[1]" : $arg, $this->test->getArguments());
+		$this->duration = -microtime(as_float: true);
 		$this->proc = proc_open(
-			$this->interpreter->getCommandLine()
-			. ' -d register_argc_argv=on ' . Helpers::escapeArg($this->test->getFile()) . ' ' . implode(' ', $args),
+			$this->interpreter
+				->withArguments(['-d', 'register_argc_argv=on', $this->test->getFile(), ...$args])
+				->getCommand(),
 			[
 				['pipe', 'r'],
 				['pipe', 'w'],
-				['pipe', 'w'],
+				$this->stderrFile ? ['file', $this->stderrFile, 'w'] : ['pipe', 'w'],
 			],
 			$pipes,
 			dirname($this->test->getFile()),
-			null,
-			['bypass_shell' => true]
-		);
+		) ?: throw new \RuntimeException('Cannot start test process.');
 
 		foreach (array_keys($this->envVars) as $name) {
 			putenv($name);
 		}
 
-		[$stdin, $this->stdout, $stderr] = $pipes;
+		[$stdin, $this->stdout] = $pipes;
 		fclose($stdin);
-		if ($flags & self::RUN_COLLECT_ERRORS) {
-			$this->stderr = $stderr;
-		} else {
-			fclose($stderr);
+
+		if (isset($pipes[2])) {
+			fclose($pipes[2]);
 		}
 
-		if ($flags & self::RUN_ASYNC) {
-			stream_set_blocking($this->stdout, false); // on Windows does not work with proc_open()
-			if ($this->stderr) {
-				stream_set_blocking($this->stderr, false);
-			}
+		if ($async) {
+			stream_set_blocking($this->stdout, enable: false); // on Windows does not work with proc_open()
 		} else {
 			while ($this->isRunning()) {
-				usleep(self::RUN_USLEEP); // stream_select() doesn't work with proc_open()
+				usleep(self::RunSleep);
 			}
 		}
 	}
@@ -152,25 +136,43 @@ class Job
 			return false;
 		}
 
-		$this->test->stdout .= stream_get_contents($this->stdout);
-		if ($this->stderr) {
-			$this->test->stderr .= stream_get_contents($this->stderr);
+		// PHP 8.5+ Windows: stream_select() works with pipes (PeekNamedPipe fix),
+		if (PHP_OS_FAMILY === 'Windows' && PHP_VERSION_ID >= 80500) {
+			$read = [$this->stdout];
+			$w = $e = [];
+			while (@stream_select($read, $w, $e, 0, 0) > 0) {
+				$chunk = fread($this->stdout, 8192);
+				if ($chunk === false || $chunk === '') {
+					break;
+				}
+				$this->test->stdout .= $chunk;
+				$read = [$this->stdout];
+			}
+		} else {
+			// Linux/macOS: stream_get_contents() works without blocking
+			// Windows < 8.5: blocks, but is necessary to prevent deadlock when output exceeds pipe buffer (~64KB)
+			$this->test->stdout .= stream_get_contents($this->stdout);
 		}
 
+		assert($this->proc !== null);
 		$status = proc_get_status($this->proc);
 		if ($status['running']) {
 			return true;
 		}
 
-		$this->duration += microtime(true);
+		$this->duration += microtime(as_float: true);
 
+		stream_set_blocking($this->stdout, true);
+		$this->test->stdout .= stream_get_contents($this->stdout);
 		fclose($this->stdout);
-		if ($this->stderr) {
-			fclose($this->stderr);
+
+		if ($this->stderrFile) {
+			$this->test->stderr .= Helpers::readFile($this->stderrFile);
+			unlink($this->stderrFile);
 		}
 
 		$code = proc_close($this->proc);
-		$this->exitCode = $code === self::CODE_NONE
+		$this->exitCode = $code === self::CodeNone
 			? $status['exitcode']
 			: $code;
 
@@ -205,7 +207,7 @@ class Job
 
 	/**
 	 * Returns output headers.
-	 * @return string[]
+	 * @return array<string, string>
 	 */
 	public function getHeaders(): array
 	{
@@ -221,5 +223,24 @@ class Job
 		return $this->duration > 0
 			? $this->duration
 			: null;
+	}
+
+
+	/**
+	 * Waits for activity on any of the running jobs.
+	 * @param  self[]  $jobs
+	 */
+	public static function waitForActivity(array $jobs): void
+	{
+		if (PHP_OS_FAMILY === 'Windows' && PHP_VERSION_ID < 80500) {
+			usleep(self::RunSleep);
+			return;
+		}
+
+		$streams = array_filter(array_map(fn($job) => $job->stdout, $jobs));
+		if ($streams) {
+			$w = $e = [];
+			@stream_select($streams, $w, $e, 0, self::RunSleep);
+		}
 	}
 }

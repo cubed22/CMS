@@ -1,11 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Framework (https://nette.org)
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
-
-declare(strict_types=1);
 
 namespace Nette\Neon;
 
@@ -20,16 +18,10 @@ final class Token
 	public const Newline = 4;
 	public const Whitespace = 5;
 
-	/** @var string */
-	public $value;
 
-	/** @var int|string */
-	public $type;
-
-
-	public function __construct(string $value, $type)
-	{
-		$this->value = $value;
-		$this->type = $type;
+	public function __construct(
+		public string $value,
+		public int|string $type,
+	) {
 	}
 }

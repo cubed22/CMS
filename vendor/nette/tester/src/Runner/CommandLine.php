@@ -1,17 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner;
+
+use function array_slice, call_user_func, count, in_array, is_array;
 
 
 /**
- * Stupid command line arguments parser.
+ * Command-line arguments parser.
  */
 class CommandLine
 {
@@ -20,23 +20,22 @@ class CommandLine
 		Optional = 'optional',
 		Repeatable = 'repeatable',
 		Enum = 'enum',
-		Realpath = 'realpath',
+		RealPath = 'realpath',
 		Normalizer = 'normalizer',
 		Value = 'default';
 
-	/** @var array[] */
-	private $options = [];
+	/** @var array<string, array<string, mixed>> */
+	private array $options = [];
+
+	/** @var array<string, string> */
+	private array $aliases = [];
 
 	/** @var string[] */
-	private $aliases = [];
-
-	/** @var string[] */
-	private $positional = [];
-
-	/** @var string */
-	private $help;
+	private array $positional = [];
+	private string $help;
 
 
+	/** @param array<string, array<string, mixed>>  $defaults */
 	public function __construct(string $help, array $defaults = [])
 	{
 		$this->help = $help;
@@ -49,13 +48,14 @@ class CommandLine
 				throw new \InvalidArgumentException("Unable to parse '$line[1]'.");
 			}
 
-			$name = end($m[1]);
+			$name = (string) end($m[1]);
 			$opts = $this->options[$name] ?? [];
+			$arg = (string) end($m[2]);
 			$this->options[$name] = $opts + [
-				self::Argument => (bool) end($m[2]),
-				self::Optional => isset($line[2]) || (substr(end($m[2]), 0, 1) === '[') || isset($opts[self::Value]),
+				self::Argument => (bool) $arg,
+				self::Optional => isset($line[2]) || str_starts_with($arg, '[') || isset($opts[self::Value]),
 				self::Repeatable => (bool) end($m[3]),
-				self::Enum => count($enums = explode('|', trim(end($m[2]), '<[]>'))) > 1 ? $enums : null,
+				self::Enum => count($enums = explode('|', trim($arg, '<[]>'))) > 1 ? $enums : null,
 				self::Value => $line[2] ?? null,
 			];
 			if ($name !== $m[1][0]) {
@@ -71,6 +71,10 @@ class CommandLine
 	}
 
 
+	/**
+	 * @param  list<string>|null  $args
+	 * @return array<string, mixed>
+	 */
 	public function parse(?array $args = null): array
 	{
 		if ($args === null) {
@@ -99,12 +103,10 @@ class CommandLine
 				continue;
 			}
 
-			[$name, $arg] = strpos($arg, '=') ? explode('=', $arg, 2) : [$arg, true];
+			[$name, $arg] = strpos($arg, '=') !== false ? explode('=', $arg, 2) : [$arg, true];
 
-			if (isset($this->aliases[$name])) {
-				$name = $this->aliases[$name];
-
-			} elseif (!isset($this->options[$name])) {
+			$name = $this->aliases[$name] ?? $name;
+			if (!isset($this->options[$name])) {
 				throw new \Exception("Unknown option $name.");
 			}
 
@@ -125,7 +127,7 @@ class CommandLine
 
 			if (
 				!empty($opt[self::Enum])
-				&& !in_array(is_array($arg) ? reset($arg) : $arg, $opt[self::Enum], true)
+				&& !in_array(is_array($arg) ? reset($arg) : $arg, $opt[self::Enum], strict: true)
 				&& !(
 					$opt[self::Optional]
 					&& $arg === true
@@ -167,13 +169,14 @@ class CommandLine
 	}
 
 
-	public function checkArg(array $opt, &$arg): void
+	/** @param array<string, mixed>  $opt */
+	public function checkArg(array $opt, mixed &$arg): void
 	{
 		if (!empty($opt[self::Normalizer])) {
 			$arg = call_user_func($opt[self::Normalizer], $arg);
 		}
 
-		if (!empty($opt[self::Realpath])) {
+		if (!empty($opt[self::RealPath])) {
 			$path = realpath($arg);
 			if ($path === false) {
 				throw new \Exception("File path '$arg' not found.");

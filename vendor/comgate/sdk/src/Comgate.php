@@ -4,12 +4,6 @@ namespace Comgate\SDK;
 
 use Comgate\SDK\Http\ITransport;
 use Comgate\SDK\Http\Transport;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\MessageFormatter;
-use GuzzleHttp\Middleware;
-use GuzzleHttp\Utils;
 use Psr\Log\LoggerInterface;
 
 class Comgate
@@ -23,9 +17,6 @@ class Comgate
 
 	/** @var string */
 	private $secret;
-
-	/** @var callable[] */
-	private $middlewares = [];
 
 	/** @var LoggerInterface|null */
 	private $logger = null;
@@ -78,16 +69,6 @@ class Comgate
 	/**
 	 * @return static
 	 */
-	public function setMiddleware(callable $middleware): self
-	{
-		$this->middlewares[] = $middleware;
-
-		return $this;
-	}
-
-	/**
-	 * @return static
-	 */
 	public function setLogger(LoggerInterface $logger): self
 	{
 		$this->logger = $logger;
@@ -100,33 +81,18 @@ class Comgate
 		return new Client($this->createTransport());
 	}
 
-	protected function createConfig(): Config
+	public function createTerminalClient(): ClientTerminal
 	{
-		return new Config($this->merchant, $this->secret);
+		return new ClientTerminal($this->createTransport());
 	}
 
-	protected function createGuzzle(?callable $handler = null): ClientInterface
+	protected function createConfig(): Config
 	{
-		$stack = HandlerStack::create($handler);
-
-		foreach ($this->middlewares as $middleware) {
-			$stack->push($middleware);
-		}
-
-		if ($this->logger !== null) {
-			$stack->push(Middleware::log($this->logger, new MessageFormatter(MessageFormatter::DEBUG)));
-		}
-
-		return new GuzzleClient([
-			'handler' => $stack,
-			'base_uri' => $this->url,
-			'headers' => ['User-Agent' => sprintf('ComgateSDK/v1/%s', Utils::defaultUserAgent())],
-		]);
+		return new Config($this->merchant, $this->secret, $this->url);
 	}
 
 	protected function createTransport(): ITransport
 	{
-		return new Transport($this->createGuzzle(), $this->createConfig());
+		return new Transport($this->createConfig(), $this->logger);
 	}
-
 }

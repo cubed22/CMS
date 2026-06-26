@@ -6,14 +6,17 @@ use Comgate\SDK\Exception\Api\MissingParamException;
 use Comgate\SDK\Exception\Api\PreauthException;
 use Comgate\SDK\Exception\ApiException;
 use Comgate\SDK\Http\Response;
-use GuzzleHttp\Psr7\Query;
 
 class PreauthCaptureResponse
 {
-
-	protected int $code;
-
-	protected string $message;
+	/**
+	 * @var int
+	 */
+	protected $code;
+	/**
+	 * @var string
+	 */
+	protected $message;
 
 	/**
 	 * @param Response $capturePreauthResponse
@@ -23,7 +26,7 @@ class PreauthCaptureResponse
 	 */
 	public function __construct(Response $capturePreauthResponse)
 	{
-		$parsedResponse = Query::parse($capturePreauthResponse->getContent());
+		$parsedResponse = json_decode($capturePreauthResponse->getContent(), true);
 
 		$code = (int) $parsedResponse['code'];
 		$message = $parsedResponse['message'];
@@ -45,9 +48,9 @@ class PreauthCaptureResponse
 				throw new ApiException($message, $code);
 		}
 	}
-        
+
         /**
-         * 
+         *
          * @return array<string, int|string>
          */
 	public function toArray(): array

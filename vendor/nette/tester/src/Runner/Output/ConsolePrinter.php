@@ -1,80 +1,58 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\Runner\Output;
 
 use Tester;
-use Tester\Dumper;
+use Tester\Ansi;
 use Tester\Runner\Runner;
 use Tester\Runner\Test;
+use function sprintf, strlen;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
- * Console printer.
+ * Prints test progress and results to the console in dots, lines, or cider mode.
  */
 class ConsolePrinter implements Tester\Runner\OutputHandler
 {
-	/** @var Runner */
-	private $runner;
-
-	/** @var bool  display skipped tests information? */
-	private $displaySkipped = false;
+	public const ModeDots = 1;
+	public const ModeCider = 2;
+	public const ModeLines = 3;
 
 	/** @var resource */
 	private $file;
+	private string $buffer;
+	private float $time;
+	private int $count;
 
-	/** @var string */
-	private $buffer;
-
-	/** @var float */
-	private $time;
-
-	/** @var int */
-	private $count;
-
-	/** @var array */
-	private $results;
-
-	/** @var string */
-	private $baseDir;
-
-	/** @var array */
-	private $symbols;
+	/** @var array<Test::Passed|Test::Skipped|Test::Failed, int>  result type => count */
+	private array $results;
+	private ?string $baseDir;
 
 
 	public function __construct(
-		Runner $runner,
-		bool $displaySkipped = false,
+		private Runner $runner,
+		private bool $displaySkipped = false,
 		?string $file = null,
-		bool $ciderMode = false
+		/** @var self::ModeDots|self::ModeCider|self::ModeLines */
+		private int $mode = self::ModeDots,
 	) {
-		$this->runner = $runner;
-		$this->displaySkipped = $displaySkipped;
-		$this->file = fopen($file ?: 'php://output', 'w');
-		$this->symbols = [
-			Test::PASSED => $ciderMode ? Dumper::color('green', '🍎') : '.',
-			Test::SKIPPED => 's',
-			Test::FAILED => $ciderMode ? Dumper::color('red', '🍎') : Dumper::color('white/red', 'F'),
-		];
+		$this->file = fopen($file ?? 'php://output', 'w') ?: throw new \RuntimeException("Cannot open file '$file' for writing.");
 	}
 
 
 	public function begin(): void
 	{
 		$this->count = 0;
+		$this->buffer = '';
 		$this->baseDir = null;
-		$this->results = [
-			Test::PASSED => 0,
-			Test::SKIPPED => 0,
-			Test::FAILED => 0,
-		];
-		$this->time = -microtime(true);
+		$this->results = [Test::Passed => 0, Test::Skipped => 0, Test::Failed => 0];
+		$this->time = -microtime(as_float: true);
 		fwrite($this->file, $this->runner->getInterpreter()->getShortInfo()
 			. ' | ' . $this->runner->getInterpreter()->getCommandLine()
 			. " | {$this->runner->threadCount} thread" . ($this->runner->threadCount > 1 ? 's' : '') . "\n\n");
@@ -85,10 +63,10 @@ class ConsolePrinter implements Tester\Runner\OutputHandler
 	{
 		if ($this->baseDir === null) {
 			$this->baseDir = dirname($test->getFile()) . DIRECTORY_SEPARATOR;
-		} elseif (strpos($test->getFile(), $this->baseDir) !== 0) {
+		} elseif (!str_starts_with($test->getFile(), $this->baseDir)) {
 			$common = array_intersect_assoc(
 				explode(DIRECTORY_SEPARATOR, $this->baseDir),
-				explode(DIRECTORY_SEPARATOR, $test->getFile())
+				explode(DIRECTORY_SEPARATOR, $test->getFile()),
 			);
 			$this->baseDir = '';
 			$prev = 0;
@@ -107,14 +85,20 @@ class ConsolePrinter implements Tester\Runner\OutputHandler
 
 	public function finish(Test $test): void
 	{
-		$this->results[$test->getResult()]++;
-		fwrite($this->file, $this->symbols[$test->getResult()]);
+		$result = $test->getResult();
+		$this->results[$result]++;
+		fwrite($this->file, match ($this->mode) {
+			self::ModeDots => [Test::Passed => '.', Test::Skipped => 's', Test::Failed => Ansi::colorize('F', 'white/red')][$result],
+			self::ModeCider => [Test::Passed => '🍏', Test::Skipped => 's', Test::Failed => '🍎'][$result],
+			self::ModeLines => $this->generateFinishLine($test),
+		});
 
-		$title = ($test->title ? "$test->title | " : '') . substr($test->getSignature(), strlen($this->baseDir));
+		$title = ($test->title ? "$test->title | " : '') . substr($test->getSignature(), strlen((string) $this->baseDir));
 		$message = '   ' . str_replace("\n", "\n   ", trim((string) $test->message)) . "\n\n";
-		if ($test->getResult() === Test::FAILED) {
-			$this->buffer .= Dumper::color('red', "-- FAILED: $title") . "\n$message";
-		} elseif ($test->getResult() === Test::SKIPPED && $this->displaySkipped) {
+		$message = preg_replace('/^   $/m', '', $message);
+		if ($result === Test::Failed) {
+			$this->buffer .= Ansi::colorize("-- FAILED: $title", 'red') . "\n$message";
+		} elseif ($result === Test::Skipped && $this->displaySkipped) {
 			$this->buffer .= "-- Skipped: $title\n$message";
 		}
 	}
@@ -125,13 +109,53 @@ class ConsolePrinter implements Tester\Runner\OutputHandler
 		$run = array_sum($this->results);
 		fwrite($this->file, !$this->count ? "No tests found\n" :
 			"\n\n" . $this->buffer . "\n"
-			. ($this->results[Test::FAILED] ? Dumper::color('white/red') . 'FAILURES!' : Dumper::color('white/green') . 'OK')
+			. ($this->results[Test::Failed] ? Ansi::color('white/red') . 'FAILURES!' : Ansi::color('white/green') . 'OK')
 			. " ($this->count test" . ($this->count > 1 ? 's' : '') . ', '
-			. ($this->results[Test::FAILED] ? $this->results[Test::FAILED] . ' failure' . ($this->results[Test::FAILED] > 1 ? 's' : '') . ', ' : '')
-			. ($this->results[Test::SKIPPED] ? $this->results[Test::SKIPPED] . ' skipped, ' : '')
+			. ($this->results[Test::Failed] ? $this->results[Test::Failed] . ' failure' . ($this->results[Test::Failed] > 1 ? 's' : '') . ', ' : '')
+			. ($this->results[Test::Skipped] ? $this->results[Test::Skipped] . ' skipped, ' : '')
 			. ($this->count !== $run ? ($this->count - $run) . ' not run, ' : '')
-			. sprintf('%0.1f', $this->time + microtime(true)) . ' seconds)' . Dumper::color() . "\n");
+			. sprintf('%0.1f', $this->time + microtime(as_float: true)) . ' seconds)' . Ansi::reset() . "\n");
 
-		$this->buffer = null;
+		$this->buffer = '';
+	}
+
+
+	private function generateFinishLine(Test $test): string
+	{
+		$result = $test->getResult();
+		$shortFilePath = str_replace((string) $this->baseDir, '', $test->getFile());
+		$shortDirPath = dirname($shortFilePath) . DIRECTORY_SEPARATOR;
+		$basename = basename($shortFilePath);
+		$fileText = $result === Test::Failed
+			? Ansi::colorize($shortDirPath, 'red') . Ansi::colorize($basename, 'white/red')
+			: Ansi::colorize($shortDirPath, 'gray') . Ansi::colorize($basename, 'silver');
+
+		$header = '· ';
+		$titleText = $test->title
+			? Ansi::colorize(" [$test->title]", 'fuchsia')
+			: '';
+
+		// failed tests messages will be printed after all tests are finished
+		$message = '';
+		if ($result !== Test::Failed && $test->message) {
+			$indent = str_repeat(' ', Ansi::textWidth($header));
+			$message = preg_match('#\n#', $test->message)
+				? "\n$indent" . preg_replace('#\r?\n#', '\0' . $indent, $test->message)
+				: Ansi::colorize("[$test->message]", 'olive');
+		}
+
+		return sprintf(
+			"%s%s/%s %s%s %s %s %s\n",
+			$header,
+			array_sum($this->results),
+			$this->count,
+			$fileText,
+			$titleText,
+			match ($result) {
+				Test::Passed => Ansi::colorize('OK', 'lime'), Test::Skipped => Ansi::colorize('SKIP', 'yellow'), Test::Failed => Ansi::colorize('FAIL', 'white/red')
+			},
+			Ansi::colorize(sprintf('in %.2f s', $test->getDuration()), 'gray'),
+			$message,
+		);
 	}
 }

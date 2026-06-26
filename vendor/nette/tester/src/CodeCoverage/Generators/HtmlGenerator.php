@@ -1,15 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester\CodeCoverage\Generators;
 
 use Tester\Helpers;
+use function count;
+use const DIRECTORY_SEPARATOR;
 
 
 /**
@@ -18,21 +18,19 @@ use Tester\Helpers;
 class HtmlGenerator extends AbstractGenerator
 {
 	private const Classes = [
-		self::CODE_TESTED => 't', // tested
-		self::CODE_UNTESTED => 'u', // untested
-		self::CODE_DEAD => 'dead', // dead code
+		self::LineTested => 't', // tested
+		self::LineUntested => 'u', // untested
+		self::LineDead => 'dead', // dead code
 	];
+	private ?string $title;
 
-	/** @var string */
-	private $title;
-
-	/** @var array */
-	private $files = [];
+	/** @var list<object{name: string, file: string, lines: array<int, int>, coverage: int|float, total: int, class: string|null}> */
+	private array $files = [];
 
 
 	/**
-	 * @param  string  $file  path to coverage.dat file
-	 * @param  array   $sources  files/directories
+	 * @param  string    $file  path to coverage.dat file
+	 * @param  string[]  $sources  files/directories
 	 */
 	public function __construct(string $file, array $sources = [], ?string $title = null)
 	{
@@ -82,11 +80,11 @@ class HtmlGenerator extends AbstractGenerator
 			if ($loaded) {
 				$lines = $this->data[$entry];
 				foreach ($lines as $flag) {
-					if ($flag >= self::CODE_UNTESTED) {
+					if ($flag >= self::LineUntested) {
 						$total++;
 					}
 
-					if ($flag >= self::CODE_TESTED) {
+					if ($flag >= self::LineTested) {
 						$covered++;
 					}
 				}
@@ -95,10 +93,10 @@ class HtmlGenerator extends AbstractGenerator
 				$this->totalSum += $total;
 				$this->coveredSum += $covered;
 			} else {
-				$this->totalSum += count(file($entry, FILE_SKIP_EMPTY_LINES));
+				$this->totalSum += count(file($entry, FILE_SKIP_EMPTY_LINES) ?: []);
 			}
 
-			$light = $total ? $total < 5 : count(file($entry)) < 50;
+			$light = $total ? $total < 5 : count(file($entry) ?: []) < 50;
 			$this->files[] = (object) [
 				'name' => str_replace($commonSourcesPath, '', $entry),
 				'file' => $entry,

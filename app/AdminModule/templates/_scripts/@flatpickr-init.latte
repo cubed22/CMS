@@ -1,19 +1,173 @@
 <script>
-  flatpickr( '.flatpickr', { 
-    position: "above",
-    altInput: true,
-    altFormat: "d. m. Y H:i",
-    altInputClass: "uk-input",
-    dateFormat: "U",
-    enableTime: true,
-    time_24hr: true,
+  function initializeFlatpickr() {
+    // Initialize flatpickr for direct elements
+    flatpickr( '.flatpickr', { 
+      position: "above",
+      altInput: true,
+      altFormat: "d. m. Y H:i",
+      altInputClass: "uk-input",
+      dateFormat: "U",
+      enableTime: true,
+      time_24hr: true,
+    });
+    flatpickr( '.flatpickr-date', { 
+      position: "above",
+      altInput: true,
+      altFormat: "d. m. Y",
+      altInputClass: "uk-input",
+      dateFormat: "U",
+      enableTime: false
+    } );
+  }
+
+  function initializeDatagridDatepickers() {
+    var dateFilterInputs = document.querySelectorAll('[data-provide="datepicker"]');
+    
+    dateFilterInputs.forEach(function(el) {
+      // Skip if already initialized
+      if (el._flatpickr) {
+        return;
+      }
+      
+      try {
+        // Check if input already has a value (from reload with filter)
+        var hasValue = el.value && el.value.trim() !== '';
+        var currentValue = el.value;
+        
+        // Clear the value before initialization to avoid parse errors
+        el.value = '';
+        
+        // Initialize immediately if has value, otherwise initialize on demand
+        var initialize = function() {
+          if (el._flatpickr) {
+            return; // Already initialized
+          }
+          
+          // Initialize flatpickr
+          var instance = flatpickr(el, {
+            position: "above",
+            altInput: true,
+            altInputClass: "uk-input form-control input-sm form-control-sm",
+            altFormat: "d. m. Y",
+            dateFormat: "U",
+            enableTime: false,
+            mode: 'single',
+            onOpen: function(selectedDates, dateStr, instance) {
+              // Just opened
+            },
+            onClose: function(selectedDates, dateStr, instance) {
+              // Set value and trigger form submit for autosubmit
+              if (el.hasAttribute('data-autosubmit-change')) {
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+          });
+          
+          // If there was a value, set it now after initialization
+          if (hasValue && currentValue) {
+            try {
+              // Convert Unix timestamp (seconds) to milliseconds for setDate
+              var timestamp = parseInt(currentValue) * 1000;
+              instance.setDate(new Date(timestamp), true);
+            } catch (e) {
+              console.warn('Error setting date value:', e);
+            }
+          }
+          
+          // Remove the click/focus handlers after initialization
+          el.removeEventListener('focus', onDemandInit);
+          el.removeEventListener('click', onDemandInit);
+          
+          // If it was initialized on demand (click), open the picker
+          if (!hasValue && event && (event.type === 'focus' || event.type === 'click')) {
+            instance.open();
+          }
+        };
+        
+        // On-demand initialization handler
+        var onDemandInit = function(e) {
+          initialize();
+          
+          // Open picker on click
+          if (el._flatpickr && (e.type === 'focus' || e.type === 'click')) {
+            el._flatpickr.open();
+          }
+        };
+        
+        // If input has value, initialize immediately (for page reload with filter)
+        if (hasValue) {
+          initialize();
+        } else {
+          // Otherwise, initialize on focus/click
+          el.addEventListener('focus', onDemandInit);
+          el.addEventListener('click', onDemandInit);
+        }
+      } catch (err) {
+        console.error('Error initializing flatpickr:', err, el);
+      }
+    });
+  }
+  
+  // Initial call on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeFlatpickr();
+    initializeDatagridDatepickers();
   });
-  flatpickr( '.flatpickr-date', { 
-    position: "above",
-    altInput: true,
-    altFormat: "d. m. Y",
-    altInputClass: "uk-input",
-    dateFormat: "U",
-    enableTime: false
-  } );
+  
+  // If DOM is already loaded (e.g., in inline script after content)
+  if (document.readyState === 'loading') {
+    // wait for DOMContentLoaded
+  } else {
+    initializeFlatpickr();
+    initializeDatagridDatepickers();
+  }
+  
+  // Reinitialize after AJAX updates (for datagrid with Naja.js)
+  if (typeof naja !== "undefined") {
+    naja.addEventListener('success', function() {
+      // Use a small delay to ensure DOM is updated
+      setTimeout(function() {
+        initializeDatagridDatepickers();
+      }, 100);
+    });
+  }
+  
+  // Fallback for $.nette (older Nette AJAX)
+  if (typeof $.nette !== "undefined") {
+    $.nette.ext('flatpickr-reinit', {
+      success: function() {
+        initializeDatagridDatepickers();
+      }
+    });
+  }
+  
+  // Also watch for new elements being added to the DOM (MutationObserver)
+  var observerConfig = { 
+    childList: true, 
+    subtree: true, 
+    attributes: false,
+    characterData: false
+  };
+  
+  var observer = new MutationObserver(function(mutations) {
+    // Check if new [data-provide="datepicker"] elements were added
+    var hasNewDatepickers = false;
+    mutations.forEach(function(mutation) {
+      if (mutation.addedNodes.length > 0) {
+        var container = mutation.target;
+        if (container.querySelector && container.querySelector('[data-provide="datepicker"]:not([data-flatpickr-initialized])')) {
+          hasNewDatepickers = true;
+        }
+      }
+    });
+    
+    if (hasNewDatepickers) {
+      setTimeout(function() {
+        initializeDatagridDatepickers();
+      }, 50);
+    }
+  });
+  
+  // Start observing the document for changes
+  observer.observe(document.body, observerConfig);
 </script>

@@ -1,49 +1,39 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * This file is part of the Nette Tester.
  * Copyright (c) 2009 David Grudl (https://davidgrudl.com)
  */
 
-declare(strict_types=1);
-
 namespace Tester;
+
+use function in_array, strlen;
 
 
 /**
- * Mock files.
+ * In-memory stream wrapper for testing file operations without touching the filesystem.
  */
 class FileMock
 {
 	private const Protocol = 'mock';
 
-	/** @var string[] */
-	public static $files = [];
+	/** @var array<string, string> */
+	public static array $files = [];
 
 	/** @var resource used by PHP itself */
 	public $context;
 
-	/** @var string */
-	private $content;
-
-	/** @var int */
-	private $readingPos;
-
-	/** @var int */
-	private $writingPos;
-
-	/** @var bool */
-	private $appendMode;
-
-	/** @var bool */
-	private $isReadable;
-
-	/** @var bool */
-	private $isWritable;
+	private string $content;
+	private int $readingPos;
+	private int $writingPos;
+	private bool $appendMode;
+	private bool $isReadable;
+	private bool $isWritable;
 
 
 	/**
-	 * @return string  file name
+	 * Creates an in-memory virtual file with the given content and returns its mock:// URL.
+	 * @return string  mock:// URL usable with standard file functions
 	 */
 	public static function create(string $content = '', ?string $extension = null): string
 	{
@@ -58,7 +48,7 @@ class FileMock
 
 	public static function register(): void
 	{
-		if (!in_array(self::Protocol, stream_get_wrappers(), true)) {
+		if (!in_array(self::Protocol, stream_get_wrappers(), strict: true)) {
 			stream_wrapper_register(self::Protocol, self::class);
 		}
 	}
@@ -84,8 +74,9 @@ class FileMock
 			self::$files[$path] = '';
 		}
 
-		$this->content = &self::$files[$path];
-		$this->content = (string) $this->content;
+		$tmp = &self::$files[$path];
+		$tmp = (string) $tmp;
+		$this->content = &$tmp;
 		$this->appendMode = $m[1] === 'a';
 		$this->readingPos = 0;
 		$this->writingPos = $this->appendMode ? strlen($this->content) : 0;
@@ -96,7 +87,7 @@ class FileMock
 	}
 
 
-	public function stream_read(int $length)
+	public function stream_read(int $length): false|string
 	{
 		if (!$this->isReadable) {
 			return false;
@@ -109,7 +100,7 @@ class FileMock
 	}
 
 
-	public function stream_write(string $data)
+	public function stream_write(string $data): false|int
 	{
 		if (!$this->isWritable) {
 			return false;
@@ -172,13 +163,15 @@ class FileMock
 	}
 
 
+	/** @return array<string, int> */
 	public function stream_stat(): array
 	{
 		return ['mode' => 0100666, 'size' => strlen($this->content)];
 	}
 
 
-	public function url_stat(string $path, int $flags)
+	/** @return array<string, int>|false */
+	public function url_stat(string $path, int $flags): array|false
 	{
 		return isset(self::$files[$path])
 			? ['mode' => 0100666, 'size' => strlen(self::$files[$path])]
@@ -192,14 +185,12 @@ class FileMock
 	}
 
 
-	public function stream_metadata(string $path, int $option, $value): bool
+	public function stream_metadata(string $path, int $option, mixed $value): bool
 	{
-		switch ($option) {
-			case STREAM_META_TOUCH:
-				return true;
-		}
-
-		return false;
+		return match ($option) {
+			STREAM_META_TOUCH => true,
+			default => false,
+		};
 	}
 
 
@@ -219,7 +210,7 @@ class FileMock
 	{
 		$bt = debug_backtrace(0, 3);
 		if (isset($bt[2]['function'])) {
-			$message = $bt[2]['function'] . '(' . @$bt[2]['args'][0] . '): ' . $message;
+			$message = $bt[2]['function'] . '(' . ($bt[2]['args'][0] ?? '') . '): ' . $message;
 		}
 
 		trigger_error($message, E_USER_WARNING);
