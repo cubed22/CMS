@@ -80,6 +80,9 @@ class LocalizedModel extends BaseModel
 
         $data = $this->getDatabase()->table(static::$tableMain);
 
+        if ($locale) 
+            $data->where([":" . static::$tableLocale . ".lang_id.shortcut" => $locale]);
+
         if ($where)
             $data->where($where);
 
@@ -110,9 +113,8 @@ class LocalizedModel extends BaseModel
     {
         $selection = $this->getDatabase()->table(static::$tableMain);
 
-        if ($locale) {
-            $selection->where([":blog_lang.lang_id.shortcut" => $locale]);
-        }
+        if ($locale)
+            $selection->where([":" . static::$tableLocale . ".lang_id.shortcut" => $locale]);
 
         if ($where)
             $selection->where($where);
@@ -124,6 +126,44 @@ class LocalizedModel extends BaseModel
             $selection->limit($limit);
 
         return $selection;
+    }
+
+    /**
+     * Insert a new record with optional localized data.
+     *
+     * @param array $values
+     * @param array $locals
+     * @return Nette\Database\Table\IRow
+     */
+    public function insert($values, $locals = [])
+    {
+        unset($values['id']);
+        $row = $this->getDatabase()->table(static::$tableMain)->insert($values);
+
+        foreach ($locals as $locale => $data) {
+            $lang = $this->getDatabase()->table('language')->where('shortcut', $locale)->fetch();
+            $data["lang_id"] = $lang->id;
+            $data[static::$relatedColumn] = $row->id;
+            $this->getDatabase()->table(static::$tableLocale)->insert($data);
+        }
+
+        return $row;
+    }
+
+    /**
+     * Insert a localized record for a specific ID and locale.
+     *
+     * @param int $id
+     * @param string $locale
+     * @param array $values
+     * @return Nette\Database\Table\IRow
+     */
+    public function insertLocale($id, $locale, $values = [])
+    {
+        $lang = $this->getDatabase()->table('language')->where('shortcut', $locale)->fetch();
+        $values["lang_id"] = $lang->id;
+        $values[static::$relatedColumn] = $id;
+        return $this->getDatabase()->table(static::$tableLocale)->insert($values);
     }
 
 }

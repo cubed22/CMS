@@ -45,13 +45,15 @@ final class RouterFactory
         foreach ($languages->findAll() as $language) {
             $shortcut = $language->data()->shortcut;
             foreach ($blog->findAll($shortcut, [':blog_lang.url NOT ?' => NULL]) as $item) {
-                $router->addRoute('[<lang=cz>/]' . $item->locale($shortcut)->url, [
-                    'module'    => 'Frontend',
-                    'presenter' => 'Blog',
-                    'action'    => 'detail',
-                    'lang'      => $shortcut,
-                    'url'       => $item->locale($shortcut)->url
-                ]);
+                if ($item->locale($shortcut)) {
+                    $router->addRoute('[<lang=cz>/]' . $item->locale($shortcut)->url, [
+                        'module'    => 'Frontend',
+                        'presenter' => 'Blog',
+                        'action'    => 'detail',
+                        'lang'      => $shortcut,
+                        'url'       => $item->locale($shortcut)->url
+                    ]);
+                }
             }
         }
 

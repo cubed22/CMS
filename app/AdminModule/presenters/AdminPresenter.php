@@ -318,7 +318,7 @@ class AdminPresenter extends Presenter
         $this->template->adminUser = $user;
 
         $this->template->allPageItems = $this->getPages()->findAll();
-        $this->template->allBlogItems = $this->getBlog()->findAll();
+        $this->template->allBlogItems = $this->getBlog()->findAll($this->lang);
         $this->template->allBlogCategoryItems = $this->getBlogCategories()->findAll();
         $this->template->allUserItems = $this->getUsers()->findAll();
         $this->template->allCronItems = $this->getCronmaster()->findAll();

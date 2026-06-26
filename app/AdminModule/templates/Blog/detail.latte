@@ -36,12 +36,17 @@
               {foreach $presenter->getAllLanguages() as $lang}
                 <li>
                   {var $shortCut = $lang->data()->shortcut}
-                  {label $shortCut . "_name" /}
-                  {input $shortCut . "_name"}
-                  {label $shortCut . "_content", style => "margin-top: 10px;" /}
-                  {input $shortCut . "_content"}
-                  {label $shortCut . "_url" /}
-                  {input $shortCut . "_url"}
+                  {if $record->locale($shortCut) !== NULL}
+                    {label $shortCut . "_name" /}
+                    {input $shortCut . "_name"}
+                    {label $shortCut . "_content", style => "margin-top: 10px;" /}
+                    {input $shortCut . "_content"}
+                    {label $shortCut . "_url" /}
+                    {input $shortCut . "_url"}
+                  {else}
+                    <p>Pro tento jazyk není vytvořen záznam.</p>
+                    <a href="{link createLocale! $shortCut}" class="btn btn-primary">Vytvořit záznam pro tento jazyk</a>
+                  {/if}
                 </li>
               {/foreach}
             </ul>
@@ -93,12 +98,14 @@
               {foreach $presenter->getAllLanguages() as $lang}
                 <li>
                   {var $shortCut = $lang->data()->shortcut}
-                  {label $shortCut . "_title" /}
-                  {input $shortCut . "_title"}
-                  {label $shortCut . "_keywords" /}
-                  {input $shortCut . "_keywords"}
-                  {label $shortCut . "_description" /}
-                  {input $shortCut . "_description"}
+                  {if $record->locale($shortCut) !== NULL}
+                    {label $shortCut . "_title" /}
+                    {input $shortCut . "_title"}
+                    {label $shortCut . "_keywords" /}
+                    {input $shortCut . "_keywords"}
+                    {label $shortCut . "_description" /}
+                    {input $shortCut . "_description"}
+                  {/if}
                 </li>
               {/foreach}
             </ul>

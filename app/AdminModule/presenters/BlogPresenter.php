@@ -148,14 +148,19 @@ final class BlogPresenter extends AdminPresenter
      */
     public function insertFormSucceeded(Form $form, $values)
     {
-        $values["url"] = $this->url->getUrl($values["name"]);
+        $locales = [];
+        $shortcut = $this->locale();
+        $locales[$shortcut]["name"] = $values["name"];
+        $locales[$shortcut]["url"] = $this->url->getUrl($values["name"]);
+        unset($values["name"]);
+        
         $time = time();
         $values["time"] = $time;
         $values["time_create"] = $time;
         $values["time_modify"] = $time;
         $values["create_user_id"] = $this->getAdminUser()->data()->id;
         $values["modify_user_id"] = $this->getAdminUser()->data()->id;
-        $result = $this->blog->insert($values);
+        $result = $this->blog->insert($values, $locales);
 
         $this->redirect("Blog:detail", ["id" => $result['id']]);
     }
@@ -189,9 +194,11 @@ final class BlogPresenter extends AdminPresenter
 
         foreach ($this->getAllLanguages() as $lang) {
             $shortCut = $lang->data()->shortcut;
-            $form->addText($shortCut . "_name", "Název")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->name);
-            $form->addTextarea($shortCut . "_content", "Obsah")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->content)->setHtmlAttribute('rows', 40);
-            $form->addText($shortCut . "_url", "Tvar URL")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->url);
+            if ($record->locale($shortCut)) {
+                $form->addText($shortCut . "_name", "Název")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->name);
+                $form->addTextarea($shortCut . "_content", "Obsah")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->content)->setHtmlAttribute('rows', 40);
+                $form->addText($shortCut . "_url", "Tvar URL")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->url);
+            }
         }
 
         $form->addUpload("image", "Obrázek")->setHtmlAttribute("style", "width: 100%;");
@@ -289,9 +296,11 @@ final class BlogPresenter extends AdminPresenter
 
         foreach ($this->getAllLanguages() as $lang) {
             $shortCut = $lang->data()->shortcut;
-            $form->addText($shortCut . "_title", "Titulek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->title);
-            $form->addTextarea($shortCut . "_description", "Popisek")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->description)->setHtmlAttribute('rows', 40);
-            $form->addText($shortCut . "_keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->keywords);
+            if ($record->locale($shortCut)) {
+                $form->addText($shortCut . "_title", "Titulek")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->title);
+                $form->addTextarea($shortCut . "_description", "Popisek")->setHtmlAttribute("class", "uk-textarea editor")->setDefaultValue($record->locale($shortCut)->description)->setHtmlAttribute('rows', 40);
+                $form->addText($shortCut . "_keywords", "Klíčová slova")->setHtmlAttribute("class", "uk-input")->setDefaultValue($record->locale($shortCut)->keywords);
+            }
         }
         $form->addSubmit("submit", "Uložit")->setHtmlAttribute("class", "btn btn-primary uk-margin-top");
 
@@ -456,6 +465,27 @@ final class BlogPresenter extends AdminPresenter
     }
 
     /**
+     * Handle creation of a locale for a blog item.
+     *
+     * @param string $shortCut
+     * @return void
+     */
+    public function handleCreateLocale($shortCut)
+    {
+        $record = $this->getRecord();
+        if (! $record) 
+            $this->error("Položka nenalezena.");
+
+        $values["name"] = $record->locale()->name . " - " . $shortCut;
+        $values["url"] = $this->url->getUrl($record->locale()->name);
+
+        $this->blog->insertLocale($record->data()->id, $shortCut, $values);
+
+        $this->flashMessage('Záznam pro jazyk ' . $shortCut . ' byl vytvořen.');
+        $this->redirect("Blog:detail", ["id" => $record->data()->id]);
+    }
+
+    /**
      * Create the grid component for listing blog items.
      *
      * @param string $name
@@ -487,7 +517,6 @@ final class BlogPresenter extends AdminPresenter
             }
         );
 
-
         $grid->addColumnText('name', 'Název', ':blog_lang.name')
             ->setRenderer(function ($row) {
                 $record = $this->blog->find($row->id, $this->locale());
@@ -502,7 +531,6 @@ final class BlogPresenter extends AdminPresenter
             ->setFormat('j.n.Y')
             ->setAlign('center')
             ->setSortable();
-
 
         $items = $this->blogCategories->findAll();
         $categories = [null => '==='];
@@ -564,11 +592,16 @@ final class BlogPresenter extends AdminPresenter
         return $grid;
     }
 
+    /**
+     * Handle deletion of selected blog items from the grid.
+     *
+     * @param array $ids
+     * @return void
+     */
     public function gridDelete(array $ids): void
     {
         foreach ($ids as $id) {
-            bdump($id);
-            //$this->handleRemove($id);
+            $this->handleRemove($id);
         }
 
         $this->flashMessage('Vybrané položky byly smazány.', 'danger');
